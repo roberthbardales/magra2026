@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Firebase → Mostrar datos y enviar token a Django</title>
+
+  <!-- Firebase (usa la versión que prefieras) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // --- CONFIGURA AQUÍ TU FIREBASE ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBZvcvGrPIBwhvOzp6EZzTq7IHzGuRErHs",
+      authDomain: "blog2025-8088a.firebaseapp.com",
+      projectId: "blog2025-8088a",
+      storageBucket: "blog2025-8088a.firebasestorage.app",
+      messagingSenderId: "749428454575",
+      appId: "1:749428454575:web:048dbc52892c7a09a6905a"
+    };
+    // -----------------------------------
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Helper: decodifica la parte middle del JWT (claims)
+    function decodeJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return { error: 'No se pudo decodificar token' };
+      }
+    }
+
+    // Inicia sesión y muestra datos (no envía al backend aún)
+    async function loginAndShowData() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        // fuerza refrescar token para asegurarnos de tener uno nuevo
+        const idToken = await user.getIdToken(true);
+
+        const userData = {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          phoneNumber: user.phoneNumber,
+          photoURL: user.photoURL,
+          providerData: user.providerData,
+          metadata: user.metadata,
+        };
+
+        document.getElementById("userData").textContent = JSON.stringify(userData, null, 2);
+
+        const claims = decodeJwt(idToken);
+        document.getElementById("claimsData").textContent = JSON.stringify(claims, null, 2);
+
+        // Mantenemos token para cuando el usuario haga "Enviar al backend"
+        window.__FIREBASE_ID_TOKEN = idToken;
+        document.getElementById("sendBtn").disabled = false;
+        document.getElementById("status").textContent = "Listo: token obtenido. Puedes enviarlo al backend.";
+      } catch (err) {
+        console.error(err);
+        alert("Error al autenticar con Google. Revisa la consola.");
+      }
+    }
+
+    // Envía el idToken al backend Django y muestra la respuesta
+    async function sendTokenToBackend() {
+      const token = window.__FIREBASE_ID_TOKEN;
+      if (!token) return alert("No hay token. Inicia sesión primero.");
+
+      try {
+        document.getElementById("status").textContent = "Enviando token al backend...";
+        const resp = await fetch("/login/firebase/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ idToken: token })
+        });
+
+        const data = await resp.json().catch(() => ({ error: "No se recibió JSON" }));
+
+        document.getElementById("backendResponse").textContent = JSON.stringify({
+          ok: resp.ok,
+          status: resp.status,
+          body: data
+        }, null, 2);
+
+        document.getElementById("status").textContent = resp.ok ? "Backend respondió OK." : "Backend respondió con error.";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("backendResponse").textContent = "Error enviando al backend: " + err.message;
+        document.getElementById("status").textContent = "Error en la petición al backend.";
+      }
+    }
+
+    window.loginAndShowData = loginAndShowData;
+    window.sendTokenToBackend = sendTokenToBackend;
+  </script>
+
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 20px; }
+    button { padding: 10px 16px; margin: 6px; cursor: pointer; }
+    pre { background:#f7f7f7; padding:12px; border-radius:8px; max-width:900px; overflow:auto; }
+    .row { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+  <h1>Datos Firebase + Enviar token a Django</h1>
+  <p>1) Presiona <strong>Iniciar sesión con Google</strong> → verás los datos y los claims del token.<br>
+     2) Luego presiona <strong>Enviar token al backend</strong> para que Django lo verifique y cree/autentique al usuario.</p>
+
+  <div class="row">
+    <button onclick="loginAndShowData()">Iniciar sesión con Google</button>
+    <button id="sendBtn" onclick="sendTokenToBackend()" disabled>Enviar token al backend (/login/firebase/)</button>
+    <span id="status" style="margin-left:8px; font-weight:600;">Sin iniciar</span>
+  </div>
+
+  <h3>📋 Datos del usuario (objeto `user`):</h3>
+  <pre id="userData">—</pre>
+
+  <h3>🧩 Claims decodificados del ID Token:</h3>
+  <pre id="claimsData">—</pre>
+
+  <h3>🔁 Respuesta del backend (/login/firebase/):</h3>
+  <pre id="backendResponse">—</pre>
+
+  <hr>
+  <p style="font-size:0.9em; color:#555;">
+    Nota: este template decodifica el token en el cliente sólo para mostrar los claims. La verificación definitiva debe hacerse en el backend
+    usando Firebase Admin SDK (como tú ya haces) para comprobar firma, expiración y emisores.
+  </p>
+</body>
+</html>

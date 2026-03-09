@@ -1,0 +1,90 @@
+{% extends "users/base_users.html" %}
+{% load static %}
+
+{% block content %}
+
+{% include "includes/header.html" %}
+
+<div class="container" style="min-height: 637px;">
+    <div class="row w-100">
+        <div class="col-12 mb-4"></div>
+        <div class="col-12 mb-4"></div>
+        <div class="col-lg-4 bg-primary offset-lg-4 mt-4">
+            <form class="mb-1 mt-1 px-4 py-4" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <h5 class="display-5 h2 text-center text-white">Administrador de Blog</h5>
+                    {{form.as_p}}
+                    <div class="text-center px-2 py-3">
+                        <input type="submit" class="btn btn-success btn-block" value="Ingresar" />
+                    </div>
+                    <div class="text-center px-2 py-1">
+                        <a class="btn btn-warning btn-block" href="{% url 'users_app:user-register'%}">Registrar</a>
+                    </div>
+            </form>
+            <div class="col-12 text-center mb-4">
+                <button
+                    type="button"
+                    class="btn btn-danger btn-block d-flex align-items-center justify-content-center"
+                    style="gap: 8px;"
+                    onclick="loginWithGoogle()"
+                >
+                    Acceder con Google
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "{{ FIREBASE_API_KEY }}",
+        authDomain: "{{ FIREBASE_AUTH_DOMAIN }}",
+        projectId: "{{ FIREBASE_PROJECT_ID }}",
+        storageBucket: "{{ FIREBASE_PROJECT_ID }}.firebasestorage.app",
+        messagingSenderId: "{{ FIREBASE_MESSAGING_SENDER_ID }}",
+        appId: "{{ FIREBASE_APP_ID }}"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    window.loginWithGoogle = async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const token = await result.user.getIdToken();
+
+            const response = await fetch("/login/firebase/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ idToken: token })
+            });
+
+            const data = await response.json();
+            console.log("✅ Login backend:", data);
+
+            if (response.ok) {
+                window.location.href = "/";
+            } else {
+                alert("❌ Error: " + data.error);
+            }
+
+        } catch (error) {
+            console.error("🔥 Error en login:", error);
+            alert("Ocurrió un error al autenticar con Google");
+        }
+    };
+</script>
+
+{% endblock content %}

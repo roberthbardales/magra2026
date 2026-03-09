@@ -1,0 +1,146 @@
+
+
+<style>
+
+
+    .card {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        border: none;
+    }
+
+    .card-header {
+        background-color: #007bff !important;
+        color: white !important;
+        border-bottom: none;
+    }
+
+    .contact-icon {
+        color: #007bff;
+        margin-right: 10px;
+        width: 25px;
+        font-size: 20px;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+
+    .info-item {
+        padding: 15px;
+        border-left: 3px solid #007bff;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
+
+    .info-item:hover {
+        background-color: #e9ecef;
+        transition: background-color 0.3s;
+    }
+</style>
+
+<div style="width: 85%; margin: 0 auto;">
+    <div class="row mt-4 mb-5">
+        <div class="col-md-10 offset-md-1">
+
+            <div class="row">
+                <!-- Formulario de Contacto -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="fas  mr-2"></i>Envía un Mensaje</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'home_app:add-contact2' %}">
+                                {% csrf_token %}
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_full_name" class="font-weight-bold">
+                                                <i class="fas fa-user contact-icon"></i>Nombres
+                                            </label>
+                                            <input type="text"
+                                                   name="full_name"
+                                                   id="id_full_name"
+                                                   class="form-control"
+                                                   placeholder="Escribe tu Nombre"
+                                                   required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_email" class="font-weight-bold">
+                                                <i class="fas fa-envelope contact-icon"></i>Correo Electrónico
+                                            </label>
+                                            <input type="email"
+                                                   name="email"
+                                                   id="id_email"
+                                                   class="form-control"
+                                                   placeholder="correo@ejemplo.com"
+                                                   required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="id_messagge" class="font-weight-bold">
+                                        <i class="fas fa-comment-dots contact-icon"></i>Mensaje
+                                    </label>
+                                    <textarea class="form-control"
+                                              name="messagge"
+                                              id="id_messagge"
+                                              rows="4"
+                                              placeholder="Escribe aquí..."
+                                              required></textarea>
+                                </div>
+
+                                <div class="form-group mb-0">
+                                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                        <i class="fas fa-paper-plane mr-2"></i>Enviar Mensaje
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Contacto -->
+                <div class="col-lg-5 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="fas mr-2"></i>Información de Contacto</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <h5 class="text-primary mb-2">
+                                    <i class="fas fa-envelope contact-icon"></i>Email
+                                </h5>
+                                <p class="text-secondary mb-0">{{ correo }}</p>
+                            </div>
+
+                            <div class="info-item">
+                                <h5 class="text-primary mb-2">
+                                    <i class="fas fa-phone contact-icon"></i>Teléfono
+                                </h5>
+                                <p class="text-secondary mb-0">{{ phone }}</p>
+                            </div>
+
+                            <div class="info-item">
+                                <h5 class="text-primary mb-2">
+                                    <i class="fas fa-map-marker-alt contact-icon"></i>Ubicación
+                                </h5>
+                                <p class="text-secondary mb-0">Lima, Perú</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+

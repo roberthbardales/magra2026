@@ -1,0 +1,107 @@
+<!-- head para PC -->
+{% extends "users/base_users.html" %}
+{% load  static %}
+
+{% block content %}
+
+{% include "includes/header.html" %}
+
+<div class="container" style="min-height: 637px;">
+    <div class="row  w-100">
+
+        <div class="col-12 mb-4">
+
+        </div>
+
+    <div class="col-lg-6 bg-primary offset-lg-3 mb-4  text-light">
+
+        <p class="display h2 mt-4 text-center">
+            Ingrese sus Datos
+        </p>
+        <div class="col-12 mb-4 mt-4">
+            <form class="form-contorl " method="post" enctype="multipart/form-data">{% csrf_token %}
+
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                    <p>Email:
+                    </p>
+                    {{ form.email }}
+                    </div>
+                    <div class="form-group col-md-6">
+                    <p>Nombres:
+                    </p>
+                    {{ form.full_name }}
+                    </div>
+                    <div class="form-group col-md-6">
+                    <p>Ocupacion:
+                    </p>
+                    <select name="ocupation" class="form-control" id="id_ocupation">
+                        <option value="1" selected="selected">Usuario</option>
+
+                      </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                    <p>Genero:
+                    </p>
+                    <select name="genero" placeholder="Genero ..." class="form-control" id="id_genero">
+
+                        <option value="M" selected="selected" >Masculino</option>
+                        <option value="F">Femenino</option>
+                        <option value="O">Otros</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                    <p>Fecha Nacimiento:
+                    </p>
+                    {{ form.date_birth }}
+                    </div>
+
+                    <!-- ✅ CAMPO AVATAR AGREGADO -->
+                    <div class="form-group col-md-12">
+                    <p>Avatar (Opcional):
+                    </p>
+                    {{ form.avatar }}
+                    <small class="form-text text-light">Sube una imagen de perfil (opcional)</small>
+                    </div>
+                    <!-- FIN CAMPO AVATAR -->
+
+                    <div class="form-group col-md-12">
+                    <p>Contraseña:
+                    </p>
+                    {{ form.password1 }}
+                    </div>
+                    <div class="form-group col-md-12">
+                    <p>Repetir Contraseña:
+                    </p>
+                    {{ form.password2 }}
+                    {% for e in  form.password2.errors %}
+                    <p style="color:red;">{{ e }}</p>
+                    {% endfor %}
+                    </div>
+                    <div class="form-group col-md-12">
+                        <button class="btn btn-success btn-block" type="submit">Registrar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% if form.errors %}
+    <div class="alert alert-danger">
+        <strong>Errores en el formulario:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ errors }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+    </div>
+{% endif %}
+</div>
+</div>
+</div>
+
+{% endblock content %}
