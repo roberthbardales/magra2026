@@ -1,49 +1,76 @@
-<!-- head para PC -->
 {% extends "users/base_users.html" %}
-{% load  static %}
+{% load static %}
 
-{% block content %}
+{% block page_title %}
+  <i class="bi bi-key-fill me-2" style="color:#f0a050;"></i> Cambiar Contraseña
+{% endblock %}
 
-{% include "includes/header.html" %}
+{% block users_content %}
 
-<div class="container" style="min-height: 637px;">
-    <div class="row  w-100">
-            
-        <div class="col-12 mb-4">
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-5">
+    <div class="inv-table">
 
+      <div class="px-4 py-3" style="border-bottom:1px solid #e3e7ef;">
+        <h6 class="mb-0 fw-semibold" style="font-size:.9rem;">
+          <i class="bi bi-key-fill me-2" style="color:#f0a050;"></i>
+          Actualizar Contraseña
+        </h6>
+      </div>
+
+      <div class="p-4">
+
+        <div class="d-flex gap-2 align-items-start p-3 mb-4 rounded"
+             style="background:#fff7ed;border:1px solid #fcd9a8;
+                    font-size:.83rem;color:#b45309;">
+          <i class="bi bi-exclamation-triangle-fill mt-1" style="flex-shrink:0;"></i>
+          <span>Al cambiar la contraseña serás redirigido al inicio de sesión automáticamente.</span>
         </div>
-        <div class="col-12 mb-4">
 
-        </div>
-        <div class="col-lg-4 bg-primary offset-lg-4 mt-4">
-            <form class=" mt-1 px-4 py-4 " method="post" enctype="multipart/form-data">{% csrf_token %}
-                <h5 class="display-5  mb-4 h2 text-center text-white">Cambiar Password</h1>
+        <form method="post">
+          {% csrf_token %}
 
-                <p class=" text-white text-">Usuario : {{ user.email}}</p>
-                <p></p>
-                {{form.as_p}}
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">Contraseña Actual</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+              <div class="text-danger mt-1" style="font-size:.78rem;">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ form.password1.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
 
-                <div class="text-center px-2 py-3">
-                    <button type="submit" class="btn btn-warning btn-block" href="{% url 'users_app:user-update'%}">Cambiar Contraseña</button>
-                </div>
-            </form>
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-muted">Nueva Contraseña</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+              <div class="text-danger mt-1" style="font-size:.78rem;">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ form.password2.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="text-danger mb-3" style="font-size:.82rem;">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ form.non_field_errors.0 }}
             </div>
-        </div>
+          {% endif %}
 
+          <hr style="border-color:#e3e7ef;">
+          <div class="d-flex gap-2 justify-content-end">
+            <a href="{% url 'users_app:user-lista' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-arrow-left me-1"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-sm"
+                    style="background:#f0a050;color:#fff;border:none;">
+              <i class="bi bi-arrow-repeat me-1"></i>Actualizar Contraseña
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
+  </div>
+</div>
 
-
-{% endblock content %}
-
-                    <!-- <p class="text-white ">
-                        Usuario: {{user.get_full_name}}
-                    </p>
-                      <div class="col-12">
-
-                      <div class="form-outline mt-4 mb-4">
-                        <p class="form-label text-light mb-2 mt-4" >Contraseña Anterior:</p>
-                        {{form.password1}}                        
-                        <p class="form-label text-light mb-2 mt-4" >Contraseña Nueva</p>
-                        {{form.password2}}                        
-                      </div>
-                    </div> -->
+{% endblock %}

@@ -1,29 +1,166 @@
-{% extends "users/base_users.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión — Magra 2026</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background: #1a1d23;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .login-card {
+      background: #22262f;
+      border: 1px solid #2d3139;
+      border-radius: 14px;
+      padding: 2.25rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.45);
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      margin-bottom: 1.75rem;
+    }
+    .login-brand-icon {
+      width: 40px; height: 40px;
+      background: #4e9fff;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(78,159,255,.3);
+    }
+    .login-brand-text  { font-weight: 700; font-size: 1rem; color: #fff; }
+    .login-brand-sub   { font-size: .7rem; color: #555c6b; }
+    .login-title       { font-size: .95rem; font-weight: 600; color: #e8eaf0; margin-bottom: 1.5rem; }
+    label.form-label   { font-size: .75rem; font-weight: 600; color: #7a8399; text-transform: uppercase; letter-spacing: .04em; }
+    .form-control {
+      background: #2a2f3a !important;
+      border: 1px solid #2d3139 !important;
+      color: #e8eaf0 !important;
+      border-radius: 8px !important;
+      font-size: .88rem !important;
+    }
+    .form-control:focus {
+      border-color: #4e9fff !important;
+      box-shadow: 0 0 0 3px rgba(78,159,255,.15) !important;
+    }
+    .form-control::placeholder { color: #555c6b !important; }
+    .input-group-text {
+      background: #2a2f3a !important;
+      border: 1px solid #2d3139 !important;
+      border-right: none !important;
+      color: #555c6b !important;
+    }
+    .input-group .form-control { border-left: none !important; }
+    .btn-login {
+      width: 100%;
+      background: #4e9fff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .65rem;
+      font-size: .9rem;
+      font-weight: 600;
+      transition: background .2s, box-shadow .2s;
+      margin-top: .25rem;
+    }
+    .btn-login:hover {
+      background: #3a8ae8;
+      box-shadow: 0 4px 16px rgba(78,159,255,.35);
+    }
+    .error-box {
+      background: rgba(224,92,92,.1);
+      border: 1px solid rgba(224,92,92,.25);
+      border-radius: 8px;
+      color: #f08080;
+      font-size: .82rem;
+      padding: .6rem .9rem;
+      margin-bottom: 1rem;
+    }
+    .divider { border-color: #2d3139; margin: 1.25rem 0; }
+    .link-secondary-custom {
+      color: #555c6b;
+      font-size: .8rem;
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .link-secondary-custom:hover { color: #4e9fff; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
 
-{% block content %}
-
-{% include "includes/header.html" %}
-
-<div class="container" style="min-height: 637px;">
-    <div class="row w-100">
-        <div class="col-12 mb-4"></div>
-        <div class="col-12 mb-4"></div>
-        <div class="col-lg-4 bg-primary offset-lg-4 mt-4">
-            <form class="mb-1 mt-1 px-4 py-4" method="post" enctype="multipart/form-data">{% csrf_token %}
-                <h5 class="display-5 h2 text-center text-white">Sistema ERP Magra 2026</h5>
-                    {{form.as_p}}
-                    <div class="text-center px-2 py-3">
-                        <input type="submit" class="btn btn-success btn-block" value="Ingresar" />
-                    </div>
-                    <div class="text-center px-2 py-1">
-                        <a class="btn btn-warning btn-block" href="{% url 'users_app:user-register'%}">Registrar</a>
-                    </div>
-            </form>
-
-        </div>
+    <div class="login-brand">
+      <div class="login-brand-icon">
+        <i class="bi bi-box-seam-fill"></i>
+      </div>
+      <div>
+        <div class="login-brand-text">Magra 2026</div>
+        <div class="login-brand-sub">Sistema de Gestión de Inventario</div>
+      </div>
     </div>
-</div>
 
+    <div class="login-title">Iniciar Sesión</div>
 
-{% endblock content %}
+    {% if form.non_field_errors %}
+      <div class="error-box">
+        <i class="bi bi-exclamation-circle me-1"></i>{{ form.non_field_errors.0 }}
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label">Correo Electrónico</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+          {{ form.email }}
+        </div>
+        {% if form.email.errors %}
+          <div class="text-danger mt-1" style="font-size:.78rem;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.email.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+          {{ form.password }}
+        </div>
+        {% if form.password.errors %}
+          <div class="text-danger mt-1" style="font-size:.78rem;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.password.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-login">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+      </button>
+    </form>
+
+    <hr class="divider">
+
+    <div class="text-center">
+      <a href="{% url 'users_app:user-update' %}" class="link-secondary-custom">
+        <i class="bi bi-key me-1"></i>Cambiar contraseña
+      </a>
+    </div>
+
+  </div>
+</body>
+</html>

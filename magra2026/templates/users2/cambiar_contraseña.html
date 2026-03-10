@@ -1,0 +1,49 @@
+<!-- head para PC -->
+{% extends "users/base_users.html" %}
+{% load  static %}
+
+{% block content %}
+
+{% include "includes/header.html" %}
+
+<div class="container" style="min-height: 637px;">
+    <div class="row  w-100">
+            
+        <div class="col-12 mb-4">
+
+        </div>
+        <div class="col-12 mb-4">
+
+        </div>
+        <div class="col-lg-4 bg-primary offset-lg-4 mt-4">
+            <form class=" mt-1 px-4 py-4 " method="post" enctype="multipart/form-data">{% csrf_token %}
+                <h5 class="display-5  mb-4 h2 text-center text-white">Cambiar Password</h1>
+
+                <p class=" text-white text-">Usuario : {{ user.email}}</p>
+                <p></p>
+                {{form.as_p}}
+
+                <div class="text-center px-2 py-3">
+                    <button type="submit" class="btn btn-warning btn-block" href="{% url 'users_app:user-update'%}">Cambiar Contraseña</button>
+                </div>
+            </form>
+            </div>
+        </div>
+
+    </div>
+
+
+{% endblock content %}
+
+                    <!-- <p class="text-white ">
+                        Usuario: {{user.get_full_name}}
+                    </p>
+                      <div class="col-12">
+
+                      <div class="form-outline mt-4 mb-4">
+                        <p class="form-label text-light mb-2 mt-4" >Contraseña Anterior:</p>
+                        {{form.password1}}                        
+                        <p class="form-label text-light mb-2 mt-4" >Contraseña Nueva</p>
+                        {{form.password2}}                        
+                      </div>
+                    </div> -->

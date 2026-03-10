@@ -1,31 +1,20 @@
-from django.conf import settings
-from django.shortcuts import render
-from django.core.mail import send_mail
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
-
-from django.views.generic import (
-    View,
-    TemplateView,
-    CreateView,
-    ListView,
-)
+from django.views.generic import View, ListView
 from django.views.generic.edit import FormView
 
-from .forms import (
-    UserRegisterForm,
-    LoginForm,
-    UpdatePasswordForm,
-)
+from .forms import UserRegisterForm, LoginForm, UpdatePasswordForm
 from .models import User
+from .mixins import SuperusuarioMixin, UsuarioListaMixin
 
 
-class UserRegisterView(FormView):
+class UserRegisterView(SuperusuarioMixin, FormView):
+    """Solo superusuario puede registrar nuevos usuarios."""
     template_name = 'users/register.html'
     form_class = UserRegisterForm
-    success_url = reverse_lazy('users_app:user-login')
+    success_url = reverse_lazy('users_app:user-lista')
 
     def form_valid(self, form):
         User.objects.create_user(
@@ -43,7 +32,9 @@ class UserRegisterView(FormView):
 class LoginUser(FormView):
     template_name = 'users/login.html'
     form_class = LoginForm
-    success_url = reverse_lazy('home_app:index')
+
+    def get_success_url(self):
+        return reverse('inventario_app:dashboard')
 
     def form_valid(self, form):
         user = authenticate(
@@ -51,7 +42,18 @@ class LoginUser(FormView):
             password=form.cleaned_data['password']
         )
         login(self.request, user)
-        return super().form_valid(form)
+
+        # Redirigir según rol
+        if user.is_superuser or user.occupation == User.ADMINISTRADOR:
+            return HttpResponseRedirect(reverse('users_app:user-lista'))
+        elif user.occupation == User.VENTAS:
+            return HttpResponseRedirect(reverse('inventario_app:producto-lista'))
+        elif user.occupation == User.ALMACEN:
+            return HttpResponseRedirect(reverse('inventario_app:dashboard'))
+        elif user.occupation == User.GERENCIA:
+            return HttpResponseRedirect(reverse('inventario_app:dashboard'))
+        else:
+            return HttpResponseRedirect(reverse('inventario_app:dashboard'))
 
 
 class LogoutView(View):
@@ -61,6 +63,7 @@ class LogoutView(View):
 
 
 class UpdatePasswordView(LoginRequiredMixin, FormView):
+    """Cualquier usuario logueado puede cambiar su contraseña."""
     template_name = 'users/cambiar_contraseña.html'
     form_class = UpdatePasswordForm
     success_url = reverse_lazy('users_app:user-login')
@@ -73,17 +76,25 @@ class UpdatePasswordView(LoginRequiredMixin, FormView):
             password=form.cleaned_data['password1']
         )
         if user:
-            new_password = form.cleaned_data['password2']
-            usuario.set_password(new_password)
+            usuario.set_password(form.cleaned_data['password2'])
             usuario.save()
         logout(self.request)
         return super().form_valid(form)
 
 
-class UserListView(LoginRequiredMixin, ListView):
-    template_name = "users/lista_usuarios.html"
+class UserListView(UsuarioListaMixin, ListView):
+    """Admin y Gerencia pueden ver la lista. Gerencia solo lectura (sin botón Nuevo)."""
+    template_name = 'users/lista_usuarios.html'
     context_object_name = 'usuarios'
-    login_url = reverse_lazy('users_app:user-login')
 
     def get_queryset(self):
         return User.objects.usuarios_sistema()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        qs = self.get_queryset()
+        ctx['total_admin']   = qs.filter(occupation='0').count()
+        ctx['total_ventas']  = qs.filter(occupation='1').count()
+        ctx['total_almacen'] = qs.filter(occupation='2').count()
+        ctx['total_gerencia']= qs.filter(occupation='3').count()
+        return ctx

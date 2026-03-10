@@ -1,297 +1,120 @@
-from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView, View
-)
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect
-from django.http import JsonResponse
-from django.db.models import Q, Sum, Count, F
+from django.db.models import Sum, Count, Q
 from django.utils import timezone
-
-from applications.users.mixins import (
-    AdministradorPermisoMixin,
-    AlmacenPermisoMixin,
-    VentasPermisoMixin,
-    GerenciaPermisoMixin,
-    BasePermisoMixin,
+from django.views.generic import (
+    ListView, DetailView, CreateView,
+    UpdateView, DeleteView, TemplateView, View,
 )
+from django.http import HttpResponseRedirect, JsonResponse
+
 from .models import (
-    UnidadMedida, Categoria, Proveedor, Almacen,
-    Producto, Movimiento, AjusteInventario, Alerta
+    Producto, Categoria, UnidadMedida, Proveedor,
+    Almacen, Movimiento, AjusteInventario, Alerta,
 )
 from .forms import (
-    UnidadMedidaForm, CategoriaForm, ProveedorForm, AlmacenForm,
-    ProductoForm, EntradaStockForm, SalidaStockForm,
-    AjusteInventarioForm, FiltroMovimientoForm
+    ProductoForm, CategoriaForm, UnidadMedidaForm, ProveedorForm,
+    AlmacenForm, EntradaStockForm, SalidaStockForm,
+    AjusteInventarioForm, FiltroMovimientoForm,
 )
 from .services import InventarioService, AlertaService
 
+# Importar mixins por sección
+from applications.users.mixins import (
+    DashboardMixin,
+    ProductoMixin,
+    StockMixin,
+    MovimientoMixin,
+    AjusteMixin,
+    AlertaMixin,
+    AlmacenMixin,
+    ProveedorMixin,
+    CategoriaMixin,
+    UnidadMedidaMixin,
+)
+from applications.users.models import User
 
-# ─────────────────────────────────────────────
+
+# ══════════════════════════════════════════
 #  DASHBOARD
-# ─────────────────────────────────────────────
-class DashboardInventarioView(BasePermisoMixin, TemplateView):
+# ══════════════════════════════════════════
+class DashboardInventarioView(DashboardMixin, TemplateView):
     template_name = 'inventario/dashboard.html'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['total_productos'] = Producto.objects.activos().count()
-        ctx['alertas_activas'] = Alerta.objects.activas().count()
-        ctx['alertas_altas'] = Alerta.objects.altas().count()
-        ctx['stock_minimo'] = Producto.objects.con_stock_minimo().count()
-        ctx['movimientos_hoy'] = Movimiento.objects.filter(
-            fecha__date=timezone.now().date()
-        ).count()
+        ctx['total_productos']  = Producto.objects.activos().count()
+        ctx['alertas_activas']  = Alerta.objects.count_activas()
+        ctx['total_movimientos']= Movimiento.objects.del_mes().count()
+        ctx['ajustes_pendientes']= AjusteInventario.objects.filter(estado='P').count()
         ctx['ultimos_movimientos'] = Movimiento.objects.select_related(
-            'producto', 'usuario'
-        )[:10]
-        ctx['alertas_recientes'] = Alerta.objects.activas().select_related(
-            'producto'
-        )[:5]
+            'producto', 'usuario').order_by('-fecha')[:10]
+        ctx['alertas_recientes'] = Alerta.objects.activas().order_by('-created')[:5]
         return ctx
 
 
-# ─────────────────────────────────────────────
-#  UNIDAD DE MEDIDA
-# ─────────────────────────────────────────────
-class UnidadMedidaListView(AdministradorPermisoMixin, ListView):
-    model = UnidadMedida
-    template_name = 'inventario/unidad_medida/lista.html'
-    context_object_name = 'unidades'
-    paginate_by = 20
-
-    def get_queryset(self):
-        q = self.request.GET.get('q', '')
-        qs = UnidadMedida.objects.all()
-        if q:
-            qs = qs.filter(Q(nombre__icontains=q) | Q(abreviatura__icontains=q))
-        return qs
-
-
-class UnidadMedidaCreateView(AdministradorPermisoMixin, CreateView):
-    model = UnidadMedida
-    form_class = UnidadMedidaForm
-    template_name = 'inventario/unidad_medida/form.html'
-    success_url = reverse_lazy('inventario_app:unidad-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Unidad de medida creada correctamente.')
-        return super().form_valid(form)
-
-
-class UnidadMedidaUpdateView(AdministradorPermisoMixin, UpdateView):
-    model = UnidadMedida
-    form_class = UnidadMedidaForm
-    template_name = 'inventario/unidad_medida/form.html'
-    success_url = reverse_lazy('inventario_app:unidad-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Unidad de medida actualizada.')
-        return super().form_valid(form)
-
-
-class UnidadMedidaDeleteView(AdministradorPermisoMixin, DeleteView):
-    model = UnidadMedida
-    template_name = 'inventario/unidad_medida/confirmar_eliminar.html'
-    success_url = reverse_lazy('inventario_app:unidad-lista')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Unidad de medida eliminada.')
-        return super().delete(request, *args, **kwargs)
-
-
-# ─────────────────────────────────────────────
-#  CATEGORÍA
-# ─────────────────────────────────────────────
-class CategoriaListView(AdministradorPermisoMixin, ListView):
-    model = Categoria
-    template_name = 'inventario/categoria/lista.html'
-    context_object_name = 'categorias'
-    paginate_by = 20
-
-    def get_queryset(self):
-        q = self.request.GET.get('q', '')
-        qs = Categoria.objects.all()
-        if q:
-            qs = qs.filter(nombre__icontains=q)
-        return qs
-
-
-class CategoriaCreateView(AdministradorPermisoMixin, CreateView):
-    model = Categoria
-    form_class = CategoriaForm
-    template_name = 'inventario/categoria/form.html'
-    success_url = reverse_lazy('inventario_app:categoria-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Categoría creada correctamente.')
-        return super().form_valid(form)
-
-
-class CategoriaUpdateView(AdministradorPermisoMixin, UpdateView):
-    model = Categoria
-    form_class = CategoriaForm
-    template_name = 'inventario/categoria/form.html'
-    success_url = reverse_lazy('inventario_app:categoria-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Categoría actualizada.')
-        return super().form_valid(form)
-
-
-class CategoriaDeleteView(AdministradorPermisoMixin, DeleteView):
-    model = Categoria
-    template_name = 'inventario/categoria/confirmar_eliminar.html'
-    success_url = reverse_lazy('inventario_app:categoria-lista')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Categoría eliminada.')
-        return super().delete(request, *args, **kwargs)
-
-
-# ─────────────────────────────────────────────
-#  PROVEEDOR
-# ─────────────────────────────────────────────
-class ProveedorListView(AdministradorPermisoMixin, ListView):
-    model = Proveedor
-    template_name = 'inventario/proveedor/lista.html'
-    context_object_name = 'proveedores'
-    paginate_by = 20
-
-    def get_queryset(self):
-        q = self.request.GET.get('q', '')
-        qs = Proveedor.objects.all()
-        if q:
-            qs = qs.filter(
-                Q(razon_social__icontains=q) |
-                Q(ruc__icontains=q) |
-                Q(contacto__icontains=q)
-            )
-        return qs
-
-
-class ProveedorCreateView(AdministradorPermisoMixin, CreateView):
-    model = Proveedor
-    form_class = ProveedorForm
-    template_name = 'inventario/proveedor/form.html'
-    success_url = reverse_lazy('inventario_app:proveedor-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Proveedor creado correctamente.')
-        return super().form_valid(form)
-
-
-class ProveedorUpdateView(AdministradorPermisoMixin, UpdateView):
-    model = Proveedor
-    form_class = ProveedorForm
-    template_name = 'inventario/proveedor/form.html'
-    success_url = reverse_lazy('inventario_app:proveedor-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Proveedor actualizado.')
-        return super().form_valid(form)
-
-
-class ProveedorDetailView(BasePermisoMixin, DetailView):
-    model = Proveedor
-    template_name = 'inventario/proveedor/detalle.html'
-    context_object_name = 'proveedor'
+# ══════════════════════════════════════════
+#  STOCK RESUMEN
+# ══════════════════════════════════════════
+class StockResumenView(StockMixin, TemplateView):
+    template_name = 'inventario/stock/resumen.html'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['productos'] = self.object.productos.filter(estado='A')
-        return ctx
-
-
-# ─────────────────────────────────────────────
-#  ALMACÉN
-# ─────────────────────────────────────────────
-class AlmacenListView(AdministradorPermisoMixin, ListView):
-    model = Almacen
-    template_name = 'inventario/almacen/lista.html'
-    context_object_name = 'almacenes'
-
-    def get_queryset(self):
-        return Almacen.objects.select_related('responsable').all()
-
-
-class AlmacenCreateView(AdministradorPermisoMixin, CreateView):
-    model = Almacen
-    form_class = AlmacenForm
-    template_name = 'inventario/almacen/form.html'
-    success_url = reverse_lazy('inventario_app:almacen-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Almacén creado correctamente.')
-        return super().form_valid(form)
-
-
-class AlmacenUpdateView(AdministradorPermisoMixin, UpdateView):
-    model = Almacen
-    form_class = AlmacenForm
-    template_name = 'inventario/almacen/form.html'
-    success_url = reverse_lazy('inventario_app:almacen-lista')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Almacén actualizado.')
-        return super().form_valid(form)
-
-
-class AlmacenDetailView(BasePermisoMixin, DetailView):
-    model = Almacen
-    template_name = 'inventario/almacen/detalle.html'
-    context_object_name = 'almacen'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['productos'] = self.object.productos.filter(estado='A').select_related(
-            'categoria', 'unidad_medida'
-        )
-        ctx['total_productos'] = ctx['productos'].count()
-        ctx['valor_total'] = ctx['productos'].aggregate(
-            total=Sum(F('stock_actual') * F('precio_compra'))
+        ctx['bajo_minimo']  = Producto.objects.con_stock_minimo()
+        ctx['sobre_maximo'] = Producto.objects.con_stock_maximo()
+        ctx['por_vencer']   = Producto.objects.por_vencer(dias=30)
+        ctx['valor_total']  = Producto.objects.activos().aggregate(
+            total=Sum('stock_actual')
         )['total'] or 0
         return ctx
 
 
-# ─────────────────────────────────────────────
+# ══════════════════════════════════════════
 #  PRODUCTO
-# ─────────────────────────────────────────────
-class ProductoListView(BasePermisoMixin, ListView):
-    model = Producto
+# ══════════════════════════════════════════
+class ProductoListView(ProductoMixin, ListView):
     template_name = 'inventario/producto/lista.html'
     context_object_name = 'productos'
     paginate_by = 20
 
     def get_queryset(self):
-        q = self.request.GET.get('q', '')
-        categoria = self.request.GET.get('categoria', '')
-        almacen = self.request.GET.get('almacen', '')
-        estado = self.request.GET.get('estado', '')
-
-        qs = Producto.objects.select_related(
-            'categoria', 'unidad_medida', 'proveedor', 'almacen'
-        ).all()
-
+        qs = Producto.objects.activos().select_related(
+            'categoria', 'almacen', 'unidad_medida')
+        q = self.request.GET.get('q')
         if q:
-            qs = qs.filter(Q(sku__icontains=q) | Q(nombre__icontains=q))
+            qs = qs.filter(Q(nombre__icontains=q) | Q(sku__icontains=q))
+        categoria = self.request.GET.get('categoria')
         if categoria:
             qs = qs.filter(categoria_id=categoria)
+        almacen = self.request.GET.get('almacen')
         if almacen:
             qs = qs.filter(almacen_id=almacen)
-        if estado:
-            qs = qs.filter(estado=estado)
-
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['categorias'] = Categoria.objects.filter(activo=True)
-        ctx['almacenes'] = Almacen.objects.filter(activo=True)
+        ctx['almacenes']  = Almacen.objects.filter(activo=True)
         return ctx
 
 
-class ProductoCreateView(AdministradorPermisoMixin, CreateView):
+class ProductoDetailView(ProductoMixin, DetailView):
+    model = Producto
+    template_name = 'inventario/producto/detalle.html'
+    context_object_name = 'producto'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['movimientos'] = Movimiento.objects.por_producto(
+            self.object.pk).order_by('-fecha')[:20]
+        ctx['form_entrada'] = EntradaStockForm()
+        ctx['form_salida']  = SalidaStockForm(producto=self.object)
+        return ctx
+
+
+class ProductoCreateView(ProductoMixin, CreateView):
     model = Producto
     form_class = ProductoForm
     template_name = 'inventario/producto/form.html'
@@ -302,37 +125,21 @@ class ProductoCreateView(AdministradorPermisoMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductoUpdateView(AdministradorPermisoMixin, UpdateView):
+class ProductoUpdateView(ProductoMixin, UpdateView):
     model = Producto
     form_class = ProductoForm
     template_name = 'inventario/producto/form.html'
     success_url = reverse_lazy('inventario_app:producto-lista')
 
     def form_valid(self, form):
-        messages.success(self.request, 'Producto actualizado.')
+        messages.success(self.request, 'Producto actualizado correctamente.')
         return super().form_valid(form)
 
 
-class ProductoDetailView(BasePermisoMixin, DetailView):
-    model = Producto
-    template_name = 'inventario/producto/detalle.html'
-    context_object_name = 'producto'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['ultimos_movimientos'] = self.object.movimientos.select_related(
-            'usuario'
-        )[:20]
-        ctx['alertas_activas'] = self.object.alertas.filter(resuelta=False)
-        ctx['entrada_form'] = EntradaStockForm()
-        ctx['salida_form'] = SalidaStockForm(producto=self.object)
-        return ctx
-
-
-# ─────────────────────────────────────────────
-#  STOCK — ENTRADAS Y SALIDAS
-# ─────────────────────────────────────────────
-class EntradaStockView(AlmacenPermisoMixin, View):
+# ══════════════════════════════════════════
+#  STOCK ENTRADA / SALIDA
+# ══════════════════════════════════════════
+class EntradaStockView(MovimientoMixin, View):
     def post(self, request, pk):
         producto = get_object_or_404(Producto, pk=pk)
         form = EntradaStockForm(request.POST)
@@ -342,53 +149,53 @@ class EntradaStockView(AlmacenPermisoMixin, View):
                     producto=producto,
                     tipo=form.cleaned_data['tipo'],
                     cantidad=form.cleaned_data['cantidad'],
-                    usuario=request.user,
-                    precio_unitario=form.cleaned_data['precio_unitario'],
+                    precio_unitario=form.cleaned_data.get('precio_unitario'),
                     motivo=form.cleaned_data.get('motivo', ''),
-                    documento=form.cleaned_data.get('documento_referencia', ''),
+                    documento_referencia=form.cleaned_data.get('documento_referencia', ''),
+                    usuario=request.user,
                 )
                 messages.success(request, 'Entrada registrada correctamente.')
-            except ValueError as e:
-                messages.error(request, str(e))
+            except Exception as e:
+                messages.error(request, f'Error: {e}')
         else:
             messages.error(request, 'Datos inválidos en el formulario.')
         return redirect('inventario_app:producto-detalle', pk=pk)
 
 
-class SalidaStockView(AlmacenPermisoMixin, View):
+class SalidaStockView(MovimientoMixin, View):
     def post(self, request, pk):
         producto = get_object_or_404(Producto, pk=pk)
-        form = SalidaStockForm(producto=producto, data=request.POST)
+        form = SalidaStockForm(request.POST, producto=producto)
         if form.is_valid():
             try:
                 InventarioService.registrar_movimiento(
                     producto=producto,
                     tipo=form.cleaned_data['tipo'],
                     cantidad=form.cleaned_data['cantidad'],
-                    usuario=request.user,
-                    precio_unitario=form.cleaned_data['precio_unitario'],
+                    precio_unitario=form.cleaned_data.get('precio_unitario'),
                     motivo=form.cleaned_data.get('motivo', ''),
-                    documento=form.cleaned_data.get('documento_referencia', ''),
+                    documento_referencia=form.cleaned_data.get('documento_referencia', ''),
+                    usuario=request.user,
                 )
                 messages.success(request, 'Salida registrada correctamente.')
-            except ValueError as e:
-                messages.error(request, str(e))
+            except Exception as e:
+                messages.error(request, f'Error: {e}')
         else:
             messages.error(request, 'Datos inválidos en el formulario.')
         return redirect('inventario_app:producto-detalle', pk=pk)
 
 
-# ─────────────────────────────────────────────
-#  MOVIMIENTOS / KARDEX
-# ─────────────────────────────────────────────
-class MovimientoListView(BasePermisoMixin, ListView):
-    model = Movimiento
+# ══════════════════════════════════════════
+#  MOVIMIENTOS
+# ══════════════════════════════════════════
+class MovimientoListView(MovimientoMixin, ListView):
     template_name = 'inventario/movimiento/lista.html'
     context_object_name = 'movimientos'
     paginate_by = 25
 
     def get_queryset(self):
-        qs = Movimiento.objects.select_related('producto', 'usuario').all()
+        qs = Movimiento.objects.select_related(
+            'producto', 'usuario').order_by('-fecha')
         form = FiltroMovimientoForm(self.request.GET)
         if form.is_valid():
             if form.cleaned_data.get('producto'):
@@ -403,121 +210,97 @@ class MovimientoListView(BasePermisoMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['filtro_form'] = FiltroMovimientoForm(self.request.GET)
+        ctx['form_filtro'] = FiltroMovimientoForm(self.request.GET)
         return ctx
 
 
-class KardexProductoView(BasePermisoMixin, ListView):
-    """Kardex individual de un producto."""
+class KardexProductoView(MovimientoMixin, DetailView):
+    model = Producto
     template_name = 'inventario/movimiento/kardex.html'
-    context_object_name = 'movimientos'
-    paginate_by = 30
-
-    def get_queryset(self):
-        self.producto = get_object_or_404(Producto, pk=self.kwargs['pk'])
-        return Movimiento.objects.filter(
-            producto=self.producto
-        ).select_related('usuario').order_by('-fecha')
+    context_object_name = 'producto'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['producto'] = self.producto
-        ctx['total_entradas'] = Movimiento.objects.entradas().filter(
-            producto=self.producto
-        ).aggregate(total=Sum('cantidad'))['total'] or 0
-        ctx['total_salidas'] = Movimiento.objects.salidas().filter(
-            producto=self.producto
-        ).aggregate(total=Sum('cantidad'))['total'] or 0
+        movimientos = Movimiento.objects.por_producto(
+            self.object.pk).order_by('fecha')
+        ctx['movimientos'] = movimientos
+        ctx['total_entradas'] = sum(
+            m.cantidad for m in movimientos
+            if m.tipo in Movimiento.TIPOS_ENTRADA)
+        ctx['total_salidas'] = sum(
+            m.cantidad for m in movimientos
+            if m.tipo in Movimiento.TIPOS_SALIDA)
         return ctx
 
 
-# ─────────────────────────────────────────────
-#  AJUSTE DE INVENTARIO
-# ─────────────────────────────────────────────
-class AjusteListView(AdministradorPermisoMixin, ListView):
-    model = AjusteInventario
+# ══════════════════════════════════════════
+#  AJUSTES
+# ══════════════════════════════════════════
+class AjusteListView(AjusteMixin, ListView):
     template_name = 'inventario/ajuste/lista.html'
     context_object_name = 'ajustes'
     paginate_by = 20
-
-    def get_queryset(self):
-        return AjusteInventario.objects.select_related(
-            'producto', 'solicitado_por', 'aprobado_por'
-        ).all()
+    queryset = AjusteInventario.objects.select_related(
+        'producto', 'solicitado_por', 'aprobado_por').order_by('-created')
 
 
-class AjusteCreateView(AlmacenPermisoMixin, CreateView):
+class AjusteCreateView(AjusteMixin, CreateView):
     model = AjusteInventario
     form_class = AjusteInventarioForm
     template_name = 'inventario/ajuste/form.html'
     success_url = reverse_lazy('inventario_app:ajuste-lista')
 
     def form_valid(self, form):
-        ajuste = form.save(commit=False)
-        ajuste.cantidad_sistema = ajuste.producto.stock_actual
-        ajuste.solicitado_por = self.request.user
-        ajuste.save()
-        messages.success(self.request, 'Ajuste solicitado. Pendiente de aprobación.')
-        return redirect(self.success_url)
+        form.instance.solicitado_por = self.request.user
+        messages.success(self.request, 'Ajuste solicitado correctamente.')
+        return super().form_valid(form)
 
 
-class AjusteAprobarView(AdministradorPermisoMixin, View):
+class AjusteAprobarView(AjusteMixin, View):
     def post(self, request, pk):
         ajuste = get_object_or_404(AjusteInventario, pk=pk)
         try:
             InventarioService.aprobar_ajuste(ajuste, request.user)
-            messages.success(request, 'Ajuste aprobado y stock actualizado.')
-        except ValueError as e:
-            messages.error(request, str(e))
+            messages.success(request, 'Ajuste aprobado correctamente.')
+        except Exception as e:
+            messages.error(request, f'Error: {e}')
         return redirect('inventario_app:ajuste-lista')
 
 
-class AjusteRechazarView(AdministradorPermisoMixin, View):
+class AjusteRechazarView(AjusteMixin, View):
     def post(self, request, pk):
         ajuste = get_object_or_404(AjusteInventario, pk=pk)
         try:
             InventarioService.rechazar_ajuste(ajuste, request.user)
             messages.success(request, 'Ajuste rechazado.')
-        except ValueError as e:
-            messages.error(request, str(e))
+        except Exception as e:
+            messages.error(request, f'Error: {e}')
         return redirect('inventario_app:ajuste-lista')
 
 
-# ─────────────────────────────────────────────
+# ══════════════════════════════════════════
 #  ALERTAS
-# ─────────────────────────────────────────────
-class AlertaListView(BasePermisoMixin, ListView):
-    model = Alerta
+# ══════════════════════════════════════════
+class AlertaListView(AlertaMixin, ListView):
     template_name = 'inventario/alerta/lista.html'
     context_object_name = 'alertas'
-    paginate_by = 25
+    paginate_by = 20
 
     def get_queryset(self):
-        tipo = self.request.GET.get('tipo', '')
-        prioridad = self.request.GET.get('prioridad', '')
-        resuelta = self.request.GET.get('resuelta', '0')
-
-        qs = Alerta.objects.select_related('producto').all()
-
+        qs = Alerta.objects.select_related('producto').order_by(
+            'resuelta', '-prioridad', '-created')
+        tipo = self.request.GET.get('tipo')
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+        resuelta = self.request.GET.get('resuelta')
         if resuelta == '0':
             qs = qs.filter(resuelta=False)
         elif resuelta == '1':
             qs = qs.filter(resuelta=True)
-
-        if tipo:
-            qs = qs.filter(tipo=tipo)
-        if prioridad:
-            qs = qs.filter(prioridad=prioridad)
         return qs
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['tipos'] = Alerta.TIPO_CHOICES
-        ctx['prioridades'] = Alerta.PRIORIDAD_CHOICES
-        return ctx
 
-
-class AlertaResolverView(BasePermisoMixin, View):
+class AlertaResolverView(AlertaMixin, View):
     def post(self, request, pk):
         alerta = get_object_or_404(Alerta, pk=pk)
         alerta.resuelta = True
@@ -527,25 +310,157 @@ class AlertaResolverView(BasePermisoMixin, View):
         return redirect('inventario_app:alerta-lista')
 
 
-# ─────────────────────────────────────────────
-#  STOCK — Vista resumen
-# ─────────────────────────────────────────────
-class StockResumenView(BasePermisoMixin, TemplateView):
-    template_name = 'inventario/stock/resumen.html'
+# ══════════════════════════════════════════
+#  ALMACÉN
+# ══════════════════════════════════════════
+class AlmacenListView(AlmacenMixin, ListView):
+    template_name = 'inventario/almacen/lista.html'
+    context_object_name = 'almacenes'
+    queryset = Almacen.objects.filter(activo=True)
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['productos_bajo_minimo'] = Producto.objects.con_stock_minimo().select_related(
-            'categoria', 'almacen'
-        )
-        ctx['productos_sobre_maximo'] = Producto.objects.con_stock_maximo().select_related(
-            'categoria', 'almacen'
-        )
-        ctx['productos_por_vencer'] = Producto.objects.por_vencer().select_related(
-            'categoria', 'almacen'
-        )
-        ctx['valor_total_inventario'] = Producto.objects.activos().aggregate(
-            total=Sum(F('stock_actual') * F('precio_compra'))
-        )['total'] or 0
-        ctx['total_skus'] = Producto.objects.activos().count()
-        return ctx
+
+class AlmacenDetailView(AlmacenMixin, DetailView):
+    model = Almacen
+    template_name = 'inventario/almacen/detalle.html'
+    context_object_name = 'almacen'
+
+
+class AlmacenCreateView(AlmacenMixin, CreateView):
+    model = Almacen
+    form_class = AlmacenForm
+    template_name = 'inventario/almacen/form.html'
+    success_url = reverse_lazy('inventario_app:almacen-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Almacén creado correctamente.')
+        return super().form_valid(form)
+
+
+class AlmacenUpdateView(AlmacenMixin, UpdateView):
+    model = Almacen
+    form_class = AlmacenForm
+    template_name = 'inventario/almacen/form.html'
+    success_url = reverse_lazy('inventario_app:almacen-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Almacén actualizado.')
+        return super().form_valid(form)
+
+
+# ══════════════════════════════════════════
+#  PROVEEDOR
+# ══════════════════════════════════════════
+class ProveedorListView(ProveedorMixin, ListView):
+    template_name = 'inventario/proveedor/lista.html'
+    context_object_name = 'proveedores'
+    queryset = Proveedor.objects.filter(activo=True)
+
+
+class ProveedorDetailView(ProveedorMixin, DetailView):
+    model = Proveedor
+    template_name = 'inventario/proveedor/detalle.html'
+    context_object_name = 'proveedor'
+
+
+class ProveedorCreateView(ProveedorMixin, CreateView):
+    model = Proveedor
+    form_class = ProveedorForm
+    template_name = 'inventario/proveedor/form.html'
+    success_url = reverse_lazy('inventario_app:proveedor-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Proveedor creado correctamente.')
+        return super().form_valid(form)
+
+
+class ProveedorUpdateView(ProveedorMixin, UpdateView):
+    model = Proveedor
+    form_class = ProveedorForm
+    template_name = 'inventario/proveedor/form.html'
+    success_url = reverse_lazy('inventario_app:proveedor-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Proveedor actualizado.')
+        return super().form_valid(form)
+
+
+# ══════════════════════════════════════════
+#  CATEGORÍA
+# ══════════════════════════════════════════
+class CategoriaListView(CategoriaMixin, ListView):
+    template_name = 'inventario/categoria/lista.html'
+    context_object_name = 'categorias'
+    queryset = Categoria.objects.filter(activo=True)
+
+
+class CategoriaCreateView(CategoriaMixin, CreateView):
+    model = Categoria
+    form_class = CategoriaForm
+    template_name = 'inventario/categoria/form.html'
+    success_url = reverse_lazy('inventario_app:categoria-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Categoría creada correctamente.')
+        return super().form_valid(form)
+
+
+class CategoriaUpdateView(CategoriaMixin, UpdateView):
+    model = Categoria
+    form_class = CategoriaForm
+    template_name = 'inventario/categoria/form.html'
+    success_url = reverse_lazy('inventario_app:categoria-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Categoría actualizada.')
+        return super().form_valid(form)
+
+
+class CategoriaDeleteView(CategoriaMixin, DeleteView):
+    model = Categoria
+    template_name = 'inventario/categoria/confirmar_eliminar.html'
+    success_url = reverse_lazy('inventario_app:categoria-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Categoría eliminada.')
+        return super().form_valid(form)
+
+
+# ══════════════════════════════════════════
+#  UNIDAD DE MEDIDA
+# ══════════════════════════════════════════
+class UnidadMedidaListView(UnidadMedidaMixin, ListView):
+    template_name = 'inventario/unidad_medida/lista.html'
+    context_object_name = 'unidades'
+    queryset = UnidadMedida.objects.filter(activo=True)
+
+
+class UnidadMedidaCreateView(UnidadMedidaMixin, CreateView):
+    model = UnidadMedida
+    form_class = UnidadMedidaForm
+    template_name = 'inventario/unidad_medida/form.html'
+    success_url = reverse_lazy('inventario_app:unidad-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Unidad creada correctamente.')
+        return super().form_valid(form)
+
+
+class UnidadMedidaUpdateView(UnidadMedidaMixin, UpdateView):
+    model = UnidadMedida
+    form_class = UnidadMedidaForm
+    template_name = 'inventario/unidad_medida/form.html'
+    success_url = reverse_lazy('inventario_app:unidad-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Unidad actualizada.')
+        return super().form_valid(form)
+
+
+class UnidadMedidaDeleteView(UnidadMedidaMixin, DeleteView):
+    model = UnidadMedida
+    template_name = 'inventario/unidad_medida/confirmar_eliminar.html'
+    success_url = reverse_lazy('inventario_app:unidad-lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Unidad eliminada.')
+        return super().form_valid(form)
