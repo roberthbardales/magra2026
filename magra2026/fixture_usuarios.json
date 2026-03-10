@@ -1,0 +1,359 @@
+[
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "email": "admin.garcia@magra.com",
+      "full_name": "Carlos García Torres",
+      "occupation": "0",
+      "genero": "M",
+      "date_birth": "1985-03-15",
+      "avatar": "",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "email": "admin.lopez@magra.com",
+      "full_name": "María López Huanca",
+      "occupation": "0",
+      "genero": "F",
+      "date_birth": "1990-07-22",
+      "avatar": "",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 6,
+    "fields": {
+      "email": "ventas.quispe@magra.com",
+      "full_name": "Pedro Quispe Mamani",
+      "occupation": "1",
+      "genero": "M",
+      "date_birth": "1992-11-08",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 7,
+    "fields": {
+      "email": "ventas.flores@magra.com",
+      "full_name": "Ana Flores Ccari",
+      "occupation": "1",
+      "genero": "F",
+      "date_birth": "1994-05-30",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 8,
+    "fields": {
+      "email": "ventas.chavez@magra.com",
+      "full_name": "Roberto Chávez Soto",
+      "occupation": "1",
+      "genero": "M",
+      "date_birth": "1991-09-14",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 9,
+    "fields": {
+      "email": "ventas.mendoza@magra.com",
+      "full_name": "Carmen Mendoza Ríos",
+      "occupation": "1",
+      "genero": "F",
+      "date_birth": "1996-02-18",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 10,
+    "fields": {
+      "email": "ventas.paredes@magra.com",
+      "full_name": "Jorge Paredes Vela",
+      "occupation": "1",
+      "genero": "M",
+      "date_birth": "1993-12-05",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 11,
+    "fields": {
+      "email": "almacen.castro@magra.com",
+      "full_name": "Miguel Castro Huamán",
+      "occupation": "2",
+      "genero": "M",
+      "date_birth": "1988-06-20",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 12,
+    "fields": {
+      "email": "almacen.rivas@magra.com",
+      "full_name": "Sandra Rivas Poma",
+      "occupation": "2",
+      "genero": "F",
+      "date_birth": "1995-04-11",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 13,
+    "fields": {
+      "email": "almacen.tapia@magra.com",
+      "full_name": "Héctor Tapia Condori",
+      "occupation": "2",
+      "genero": "M",
+      "date_birth": "1987-10-25",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 14,
+    "fields": {
+      "email": "almacen.nina@magra.com",
+      "full_name": "Rosa Nina Apaza",
+      "occupation": "2",
+      "genero": "F",
+      "date_birth": "1997-08-03",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 15,
+    "fields": {
+      "email": "gerencia.vargas@magra.com",
+      "full_name": "Eduardo Vargas Meza",
+      "occupation": "3",
+      "genero": "M",
+      "date_birth": "1978-01-17",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 16,
+    "fields": {
+      "email": "gerencia.salas@magra.com",
+      "full_name": "Patricia Salas Benítez",
+      "occupation": "3",
+      "genero": "F",
+      "date_birth": "1980-09-29",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 17,
+    "fields": {
+      "email": "gerencia.montes@magra.com",
+      "full_name": "Alfredo Montes Cárdenas",
+      "occupation": "3",
+      "genero": "M",
+      "date_birth": "1975-05-12",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 18,
+    "fields": {
+      "email": "ventas.ortiz@magra.com",
+      "full_name": "Lucía Ortiz Palomino",
+      "occupation": "1",
+      "genero": "F",
+      "date_birth": "1998-03-07",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 19,
+    "fields": {
+      "email": "almacen.huanca@magra.com",
+      "full_name": "Wilmer Huanca Turpo",
+      "occupation": "2",
+      "genero": "M",
+      "date_birth": "1989-11-30",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 20,
+    "fields": {
+      "email": "gerencia.delgado@magra.com",
+      "full_name": "Silvia Delgado Arce",
+      "occupation": "3",
+      "genero": "F",
+      "date_birth": "1982-07-19",
+      "avatar": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "password": "pbkdf2_sha256$260000$demo$hashedpassword",
+      "last_login": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
