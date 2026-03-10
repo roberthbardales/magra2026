@@ -1,0 +1,216 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}{{ producto.nombre }}{% endblock %}
+
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <a href="{% url 'inventario_app:producto-lista' %}" class="text-muted small"><i class="bi bi-arrow-left"></i> Productos</a>
+    <h5 class="font-weight-bold mb-0 mt-1">{{ producto.nombre }} <code class="text-muted">{{ producto.sku }}</code></h5>
+  </div>
+  <div>
+    <a href="{% url 'inventario_app:producto-editar' producto.pk %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-pencil"></i> Editar
+    </a>
+    <a href="{% url 'inventario_app:kardex' producto.pk %}" class="btn btn-sm btn-outline-info ml-1">
+      <i class="bi bi-journal-text"></i> Kardex
+    </a>
+  </div>
+</div>
+
+<div class="row">
+
+  <!-- INFO PRODUCTO -->
+  <div class="col-lg-4 mb-4">
+    <div class="card border-0 shadow-sm h-100">
+      {% if producto.imagen %}
+        <img src="{{ producto.imagen.url }}" class="card-img-top" style="max-height:200px;object-fit:cover;">
+      {% endif %}
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><th class="text-muted" width="45%">Categoría</th><td>{{ producto.categoria }}</td></tr>
+          <tr><th class="text-muted">Unidad</th><td>{{ producto.unidad_medida }}</td></tr>
+          <tr><th class="text-muted">Almacén</th><td>{{ producto.almacen }}</td></tr>
+          <tr><th class="text-muted">Proveedor</th><td>{{ producto.proveedor|default:"—" }}</td></tr>
+          <tr><th class="text-muted">P. Compra</th><td>S/ {{ producto.precio_compra }}</td></tr>
+          <tr><th class="text-muted">P. Venta</th><td>S/ {{ producto.precio_venta }}</td></tr>
+          <tr><th class="text-muted">Margen</th><td>{{ producto.margen }}%</td></tr>
+          <tr><th class="text-muted">Vencimiento</th><td>{{ producto.fecha_vencimiento|default:"—" }}</td></tr>
+          <tr><th class="text-muted">Estado</th>
+            <td>
+              {% if producto.estado == 'A' %}<span class="badge badge-success">Activo</span>
+              {% elif producto.estado == 'I' %}<span class="badge badge-secondary">Inactivo</span>
+              {% else %}<span class="badge badge-dark">Descontinuado</span>{% endif %}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOCK Y OPERACIONES -->
+  <div class="col-lg-8">
+
+    <!-- STOCK ACTUAL -->
+    <div class="row mb-3">
+      <div class="col-4">
+        <div class="stat-card {% if producto.tiene_alerta_minimo %}border-danger{% endif %}">
+          <div class="stat-card-icon {% if producto.tiene_alerta_minimo %}bg-danger{% else %}bg-primary{% endif %} text-white">
+            <i class="bi bi-layers-fill"></i>
+          </div>
+          <div>
+            <div class="stat-card-value {% if producto.tiene_alerta_minimo %}text-danger{% endif %}">
+              {{ producto.stock_actual }}
+            </div>
+            <div class="stat-card-label">Stock actual</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="stat-card">
+          <div class="stat-card-icon bg-warning text-white"><i class="bi bi-arrow-down-circle"></i></div>
+          <div>
+            <div class="stat-card-value">{{ producto.stock_minimo }}</div>
+            <div class="stat-card-label">Stock mínimo</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="stat-card">
+          <div class="stat-card-icon bg-success text-white"><i class="bi bi-arrow-up-circle"></i></div>
+          <div>
+            <div class="stat-card-value">{{ producto.stock_maximo }}</div>
+            <div class="stat-card-label">Stock máximo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTAS ACTIVAS -->
+    {% if alertas_activas %}
+    <div class="alert alert-warning py-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <strong>{{ alertas_activas.count }} alerta(s) activa(s):</strong>
+      {% for a in alertas_activas %}
+        <div class="small">{{ a.mensaje }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ENTRADA DE STOCK -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-success text-white py-2">
+        <i class="bi bi-arrow-down-circle-fill"></i> Registrar Entrada
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'inventario_app:stock-entrada' producto.pk %}">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-3">
+              <label class="small font-weight-bold">Tipo</label>
+              {{ entrada_form.tipo }}
+            </div>
+            <div class="col-md-2">
+              <label class="small font-weight-bold">Cantidad</label>
+              {{ entrada_form.cantidad }}
+            </div>
+            <div class="col-md-2">
+              <label class="small font-weight-bold">Precio Unit.</label>
+              {{ entrada_form.precio_unitario }}
+            </div>
+            <div class="col-md-3">
+              <label class="small font-weight-bold">N° Documento</label>
+              {{ entrada_form.documento_referencia }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-success btn-sm btn-block">
+                <i class="bi bi-check-lg"></i> Registrar
+              </button>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-10">
+              <label class="small font-weight-bold">Motivo (opcional)</label>
+              {{ entrada_form.motivo }}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- SALIDA DE STOCK -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-danger text-white py-2">
+        <i class="bi bi-arrow-up-circle-fill"></i> Registrar Salida
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'inventario_app:stock-salida' producto.pk %}">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-3">
+              <label class="small font-weight-bold">Tipo</label>
+              {{ salida_form.tipo }}
+            </div>
+            <div class="col-md-2">
+              <label class="small font-weight-bold">Cantidad</label>
+              {{ salida_form.cantidad }}
+            </div>
+            <div class="col-md-2">
+              <label class="small font-weight-bold">Precio Unit.</label>
+              {{ salida_form.precio_unitario }}
+            </div>
+            <div class="col-md-3">
+              <label class="small font-weight-bold">N° Documento</label>
+              {{ salida_form.documento_referencia }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-danger btn-sm btn-block">
+                <i class="bi bi-check-lg"></i> Registrar
+              </button>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-10">
+              <label class="small font-weight-bold">Motivo (opcional)</label>
+              {{ salida_form.motivo }}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ÚLTIMOS MOVIMIENTOS -->
+    <div class="inv-table">
+      <div class="px-3 py-2 border-bottom font-weight-bold">Últimos movimientos</div>
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Ant.</th><th>Post.</th><th>Usuario</th><th>Doc.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mov in ultimos_movimientos %}
+          <tr>
+            <td><small>{{ mov.fecha|date:"d/m/Y H:i" }}</small></td>
+            <td>
+              {% if mov.es_entrada %}
+                <span class="badge badge-success">{{ mov.get_tipo_display }}</span>
+              {% else %}
+                <span class="badge badge-danger">{{ mov.get_tipo_display }}</span>
+              {% endif %}
+            </td>
+            <td>{{ mov.cantidad }}</td>
+            <td>{{ mov.stock_anterior }}</td>
+            <td>{{ mov.stock_posterior }}</td>
+            <td><small>{{ mov.usuario.full_name }}</small></td>
+            <td><small>{{ mov.documento_referencia|default:"—" }}</small></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-3">Sin movimientos.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

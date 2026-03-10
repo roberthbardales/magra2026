@@ -1,0 +1,68 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Ajustes de Inventario{% endblock %}
+
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="font-weight-bold mb-0">Ajustes de Inventario</h5>
+  <a href="{% url 'inventario_app:ajuste-crear' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Solicitar Ajuste
+  </a>
+</div>
+
+<div class="inv-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th class="text-right">En sistema</th>
+        <th class="text-right">Físico</th>
+        <th class="text-right">Diferencia</th>
+        <th>Motivo</th>
+        <th>Estado</th>
+        <th>Solicitado por</th>
+        <th>Aprobado por</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for aj in ajustes %}
+      <tr>
+        <td>{{ aj.producto.nombre }}</td>
+        <td class="text-right">{{ aj.cantidad_sistema }}</td>
+        <td class="text-right">{{ aj.cantidad_fisica }}</td>
+        <td class="text-right {% if aj.diferencia > 0 %}text-success{% elif aj.diferencia < 0 %}text-danger{% endif %}">
+          {% if aj.diferencia > 0 %}+{% endif %}{{ aj.diferencia }}
+        </td>
+        <td><small>{{ aj.motivo|truncatechars:50 }}</small></td>
+        <td>
+          {% if aj.estado == 'P' %}<span class="badge badge-warning">Pendiente</span>
+          {% elif aj.estado == 'A' %}<span class="badge badge-success">Aprobado</span>
+          {% else %}<span class="badge badge-danger">Rechazado</span>{% endif %}
+        </td>
+        <td><small>{{ aj.solicitado_por.full_name }}</small></td>
+        <td><small>{{ aj.aprobado_por.full_name|default:"—" }}</small></td>
+        <td>
+          {% if aj.estado == 'P' %}
+            <form method="post" action="{% url 'inventario_app:ajuste-aprobar' aj.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-xs btn-success" onclick="return confirm('¿Aprobar este ajuste?')">
+                <i class="bi bi-check"></i>
+              </button>
+            </form>
+            <form method="post" action="{% url 'inventario_app:ajuste-rechazar' aj.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('¿Rechazar este ajuste?')">
+                <i class="bi bi-x"></i>
+              </button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" class="text-center text-muted py-4">No hay ajustes registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<style>.btn-xs{padding:.15rem .4rem;font-size:.75rem;}</style>
+{% endblock %}

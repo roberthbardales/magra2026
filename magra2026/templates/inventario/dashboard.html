@@ -1,0 +1,127 @@
+{% extends "inventario/base_inventario.html" %}
+{% load static %}
+
+{% block page_title %}Dashboard — Inventario{% endblock %}
+
+{% block inv_content %}
+
+<div class="row mb-4">
+  <div class="col-12">
+    <h4 class="font-weight-bold mb-0">Bienvenido, {{ request.user.full_name }}</h4>
+    <small class="text-muted">Resumen del sistema de inventario</small>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="row mb-4">
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-primary text-white"><i class="bi bi-box-fill"></i></div>
+      <div>
+        <div class="stat-card-value">{{ total_productos }}</div>
+        <div class="stat-card-label">Productos activos</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-danger text-white"><i class="bi bi-bell-fill"></i></div>
+      <div>
+        <div class="stat-card-value">{{ alertas_activas }}</div>
+        <div class="stat-card-label">Alertas activas</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-warning text-white"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div>
+        <div class="stat-card-value">{{ stock_minimo }}</div>
+        <div class="stat-card-label">Bajo stock mínimo</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-success text-white"><i class="bi bi-arrow-left-right"></i></div>
+      <div>
+        <div class="stat-card-value">{{ movimientos_hoy }}</div>
+        <div class="stat-card-label">Movimientos hoy</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+
+  <!-- ÚLTIMOS MOVIMIENTOS -->
+  <div class="col-lg-7 mb-4">
+    <div class="inv-table">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+        <strong>Últimos Movimientos</strong>
+        <a href="{% url 'inventario_app:movimiento-lista' %}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+      </div>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Cantidad</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mov in ultimos_movimientos %}
+          <tr>
+            <td>{{ mov.producto.nombre }}</td>
+            <td>
+              {% if mov.es_entrada %}
+                <span class="badge badge-success">{{ mov.get_tipo_display }}</span>
+              {% else %}
+                <span class="badge badge-danger">{{ mov.get_tipo_display }}</span>
+              {% endif %}
+            </td>
+            <td>{{ mov.cantidad }}</td>
+            <td>{{ mov.usuario.full_name }}</td>
+            <td><small>{{ mov.fecha|date:"d/m/Y H:i" }}</small></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-3">Sin movimientos aún.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ALERTAS RECIENTES -->
+  <div class="col-lg-5 mb-4">
+    <div class="inv-table">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+        <strong>Alertas Recientes</strong>
+        <a href="{% url 'inventario_app:alerta-lista' %}" class="btn btn-sm btn-outline-danger">Ver todas</a>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for alerta in alertas_recientes %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <strong class="text-sm">{{ alerta.producto.nombre }}</strong>
+            {% if alerta.prioridad == '3' %}
+              <span class="badge badge-danger">Alta</span>
+            {% elif alerta.prioridad == '2' %}
+              <span class="badge badge-warning">Media</span>
+            {% else %}
+              <span class="badge badge-secondary">Baja</span>
+            {% endif %}
+          </div>
+          <small class="text-muted">{{ alerta.mensaje }}</small>
+        </div>
+        {% empty %}
+        <div class="list-group-item text-center text-muted py-3">Sin alertas activas.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

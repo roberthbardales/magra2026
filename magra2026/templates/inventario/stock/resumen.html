@@ -1,0 +1,109 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Resumen de Stock{% endblock %}
+{% block inv_content %}
+<h5 class="font-weight-bold mb-4">Resumen de Stock</h5>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-primary text-white"><i class="bi bi-box-fill"></i></div>
+      <div>
+        <div class="stat-card-value">{{ total_skus }}</div>
+        <div class="stat-card-label">Total SKUs activos</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-success text-white"><i class="bi bi-currency-dollar"></i></div>
+      <div>
+        <div class="stat-card-value">S/ {{ valor_total_inventario|floatformat:2 }}</div>
+        <div class="stat-card-label">Valor total inventario</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-danger text-white"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div>
+        <div class="stat-card-value">{{ productos_bajo_minimo.count }}</div>
+        <div class="stat-card-label">Bajo stock mínimo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BAJO MÍNIMO -->
+{% if productos_bajo_minimo %}
+<div class="inv-table mb-4">
+  <div class="px-3 py-2 border-bottom bg-danger text-white font-weight-bold">
+    <i class="bi bi-exclamation-triangle-fill"></i> Productos bajo stock mínimo
+  </div>
+  <table class="table table-sm mb-0">
+    <thead><tr><th>SKU</th><th>Nombre</th><th>Almacén</th><th>Actual</th><th>Mínimo</th><th></th></tr></thead>
+    <tbody>
+      {% for p in productos_bajo_minimo %}
+      <tr>
+        <td><code>{{ p.sku }}</code></td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.almacen }}</td>
+        <td class="text-danger font-weight-bold">{{ p.stock_actual }}</td>
+        <td>{{ p.stock_minimo }}</td>
+        <td><a href="{% url 'inventario_app:producto-detalle' p.pk %}" class="btn btn-xs btn-outline-primary">Ver</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- SOBRE MÁXIMO -->
+{% if productos_sobre_maximo %}
+<div class="inv-table mb-4">
+  <div class="px-3 py-2 border-bottom bg-warning font-weight-bold">
+    <i class="bi bi-arrow-up-circle-fill"></i> Productos sobre stock máximo
+  </div>
+  <table class="table table-sm mb-0">
+    <thead><tr><th>SKU</th><th>Nombre</th><th>Almacén</th><th>Actual</th><th>Máximo</th><th></th></tr></thead>
+    <tbody>
+      {% for p in productos_sobre_maximo %}
+      <tr>
+        <td><code>{{ p.sku }}</code></td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.almacen }}</td>
+        <td class="text-warning font-weight-bold">{{ p.stock_actual }}</td>
+        <td>{{ p.stock_maximo }}</td>
+        <td><a href="{% url 'inventario_app:producto-detalle' p.pk %}" class="btn btn-xs btn-outline-primary">Ver</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- POR VENCER -->
+{% if productos_por_vencer %}
+<div class="inv-table mb-4">
+  <div class="px-3 py-2 border-bottom bg-info text-white font-weight-bold">
+    <i class="bi bi-clock-fill"></i> Productos próximos a vencer (30 días)
+  </div>
+  <table class="table table-sm mb-0">
+    <thead><tr><th>SKU</th><th>Nombre</th><th>Almacén</th><th>Stock</th><th>Vencimiento</th><th></th></tr></thead>
+    <tbody>
+      {% for p in productos_por_vencer %}
+      <tr>
+        <td><code>{{ p.sku }}</code></td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.almacen }}</td>
+        <td>{{ p.stock_actual }}</td>
+        <td class="text-info font-weight-bold">{{ p.fecha_vencimiento }}</td>
+        <td><a href="{% url 'inventario_app:producto-detalle' p.pk %}" class="btn btn-xs btn-outline-primary">Ver</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<style>.btn-xs{padding:.15rem .4rem;font-size:.75rem;}</style>
+{% endblock %}

@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="inv-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="inv-sidebar" id="invSidebar">
+    <div class="inv-sidebar-header">
+      <i class="bi bi-box-seam-fill"></i>
+      <span>Inventario</span>
+    </div>
+
+    <ul class="inv-nav">
+
+      <li class="inv-nav-section">General</li>
+
+      <li>
+        <a href="{% url 'inventario_app:dashboard' %}"
+           class="inv-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:stock-resumen' %}"
+           class="inv-nav-link {% if request.resolver_match.url_name == 'stock-resumen' %}active{% endif %}">
+          <i class="bi bi-layers-fill"></i> Stock
+          {% if alertas_activas %}
+            <span class="badge badge-danger ml-auto">{{ alertas_activas }}</span>
+          {% endif %}
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:alerta-lista' %}"
+           class="inv-nav-link {% if 'alerta' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-bell-fill"></i> Alertas
+        </a>
+      </li>
+
+      <li class="inv-nav-section">Operaciones</li>
+
+      <li>
+        <a href="{% url 'inventario_app:producto-lista' %}"
+           class="inv-nav-link {% if 'producto' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-box-fill"></i> Productos
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:movimiento-lista' %}"
+           class="inv-nav-link {% if 'movimiento' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-arrow-left-right"></i> Movimientos
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:ajuste-lista' %}"
+           class="inv-nav-link {% if 'ajuste' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-sliders"></i> Ajustes
+        </a>
+      </li>
+
+      <li class="inv-nav-section">Configuración</li>
+
+      <li>
+        <a href="{% url 'inventario_app:almacen-lista' %}"
+           class="inv-nav-link {% if 'almacen' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-building"></i> Almacenes
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:proveedor-lista' %}"
+           class="inv-nav-link {% if 'proveedor' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-truck"></i> Proveedores
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:categoria-lista' %}"
+           class="inv-nav-link {% if 'categoria' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-tags-fill"></i> Categorías
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'inventario_app:unidad-lista' %}"
+           class="inv-nav-link {% if 'unidad' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-rulers"></i> Unidades
+        </a>
+      </li>
+
+    </ul>
+
+    <div class="inv-sidebar-footer">
+      <a href="{% url 'users_app:user-logout' %}" class="inv-nav-link text-danger">
+        <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="inv-main">
+
+    <!-- TOPBAR -->
+    <div class="inv-topbar">
+      <button class="btn btn-sm btn-outline-secondary d-md-none" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="inv-topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="inv-topbar-user">
+        <i class="bi bi-person-circle"></i>
+        <span>{{ request.user.full_name }}</span>
+        <small class="text-muted ml-1">({{ request.user.get_occupation_display }})</small>
+      </div>
+    </div>
+
+    <!-- MENSAJES -->
+    {% if messages %}
+      <div class="px-4 pt-3">
+        {% for msg in messages %}
+          <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+            {{ msg }}
+            <button type="button" class="close" data-dismiss="alert">
+              <span>&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- CONTENIDO -->
+    <div class="inv-content">
+      {% block inv_content %}{% endblock %}
+    </div>
+
+  </main>
+</div>
+
+<style>
+  /* ── LAYOUT ── */
+  .inv-layout {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .inv-sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: #1a1d23;
+    color: #c9cdd4;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+
+  .inv-sidebar-header {
+    padding: 1.25rem 1.25rem 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    border-bottom: 1px solid #2d3139;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    letter-spacing: -.01em;
+  }
+
+  .inv-sidebar-header i { color: #4e9fff; font-size: 1.3rem; }
+
+  .inv-nav {
+    list-style: none;
+    padding: .5rem 0;
+    margin: 0;
+    flex: 1;
+  }
+
+  .inv-nav-section {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #555c6b;
+    padding: 1rem 1.25rem .3rem;
+    font-weight: 600;
+  }
+
+  .inv-nav-link {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .55rem 1.25rem;
+    color: #9aa0ad;
+    text-decoration: none;
+    font-size: .875rem;
+    border-radius: 0;
+    transition: background .15s, color .15s;
+    border-left: 3px solid transparent;
+  }
+
+  .inv-nav-link:hover {
+    background: #22262e;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .inv-nav-link.active {
+    background: #22262e;
+    color: #fff;
+    border-left-color: #4e9fff;
+  }
+
+  .inv-nav-link i { width: 18px; text-align: center; }
+
+  .inv-sidebar-footer {
+    padding: .75rem .5rem;
+    border-top: 1px solid #2d3139;
+  }
+
+  /* ── MAIN ── */
+  .inv-main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f4f6f9;
+    min-height: 100vh;
+  }
+
+  /* ── TOPBAR ── */
+  .inv-topbar {
+    background: #fff;
+    border-bottom: 1px solid #e3e7ef;
+    padding: .75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .inv-topbar-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1a1d23;
+  }
+
+  .inv-topbar-user {
+    font-size: .85rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+
+  /* ── CONTENT ── */
+  .inv-content { padding: 1.5rem; }
+
+  /* ── CARDS STAT ── */
+  .stat-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #e3e7ef;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stat-card-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .stat-card-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #1a1d23;
+  }
+
+  .stat-card-label {
+    font-size: .8rem;
+    color: #6b7280;
+    margin-top: .2rem;
+  }
+
+  /* ── TABLE ── */
+  .inv-table {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e3e7ef;
+    overflow: hidden;
+  }
+
+  .inv-table .table { margin: 0; }
+
+  .inv-table .table thead th {
+    background: #f8fafc;
+    border-bottom: 2px solid #e3e7ef;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    font-weight: 600;
+    padding: .75rem 1rem;
+  }
+
+  .inv-table .table td { padding: .75rem 1rem; vertical-align: middle; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .inv-sidebar { transform: translateX(-100%); transition: transform .3s; }
+    .inv-sidebar.open { transform: translateX(0); }
+    .inv-main { margin-left: 0; }
+  }
+</style>
+
+<script>
+  document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+    document.getElementById('invSidebar').classList.toggle('open');
+  });
+</script>
+
+{% endblock content %}

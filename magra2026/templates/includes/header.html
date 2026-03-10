@@ -33,15 +33,10 @@
 
                     {% if not user.is_anonymous %}
                     <li class="nav-item mx-1">
-                        <a href="{% url 'favoritos_app:perfil' %}" class="nav-link p-0">
+                        <a href="" class="nav-link p-0">
                             {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" alt="Avatar"
+                                <img src="" alt="Avatar"
                                      style="width:50px; height:50px; border-radius:50%;">
-                            {% elif user.avatar_url %}
-                                <img src="{{ user.avatar_url }}" alt="Avatar"
-                                     style="width:50px; height:50px; border-radius:50%;">
-                            {% else %}
-                                <span class="btn btn-warning text-dark">Perfil</span>
                             {% endif %}
                         </a>
                     </li>
@@ -62,30 +57,22 @@
                     </li>
                         {% if not user.is_anonymous %}
                         <li class="nav-item mx-1">
-                            <a class="nav-link text-white" href="{% url 'favoritos_app:perfil' %}">{{user.name}}</a>
+                            <a class="nav-link text-white" href="">{{user.name}}</a>
                         </li>
                             {% else %}
                             <li class="nav-item mx-1">
-                            <a class="nav-link btn text-white" href="{% url 'users_app:user-login' %}">Usuario: Anonimo</a>
+                            <a class="nav-link btn text-white" href="">Usuario: Anonimo</a>
                         </li>
                             {% endif %}
 
                     </ul>
 
-                    <form method="get" action="{% url 'entrada_app:entry-lista' %}" class="form-inline my-2 my-lg-0">{% csrf_token %}
+                    <form method="get" action="" class="form-inline my-2 my-lg-0">{% csrf_token %}
                         <input class="form-control mr-sm-2" id="kword_general" name="kword_general" type="search" placeholder="Busqueda... " aria-label="Search" value="{{request.GET.kword_general}}" style="max-width: 140px;">
                         <button class="btn btn-dark my-2 my-sm-0" type="submit">Buscar</button>
                     </form>
 
-                    <!-- Widget del clima -->
-                    <div class="ml-3 text-white d-flex align-items-center">
-                        <!-- <span class="badge badge-info mr-2 mb-1" style="font-size: 0.95rem; padding: 0.5rem 0.75rem;">
-                            🌐 {{ mi_ip }}
-                        </span> -->
-                        <span class="badge text-light" style="font-size: 1.1rem;">
-                            🌡️ {{ temperatura }}°C
-                        </span>
-                    </div>
+
 
                 </div>
             </div>

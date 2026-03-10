@@ -1,0 +1,30 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Categorías{% endblock %}
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="font-weight-bold mb-0">Categorías</h5>
+  <a href="{% url 'inventario_app:categoria-crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva</a>
+</div>
+<div class="inv-table">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Nombre</th><th>Descripción</th><th>Productos</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      {% for c in categorias %}
+      <tr>
+        <td>{{ c.nombre }}</td>
+        <td><small class="text-muted">{{ c.descripcion|truncatechars:60|default:"—" }}</small></td>
+        <td>{{ c.productos.count }}</td>
+        <td>{% if c.activo %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge badge-secondary">Inactivo</span>{% endif %}</td>
+        <td>
+          <a href="{% url 'inventario_app:categoria-editar' c.pk %}" class="btn btn-xs btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'inventario_app:categoria-eliminar' c.pk %}" class="btn btn-xs btn-outline-danger"><i class="bi bi-trash"></i></a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center text-muted py-3">Sin categorías.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<style>.btn-xs{padding:.15rem .4rem;font-size:.75rem;}</style>
+{% endblock %}

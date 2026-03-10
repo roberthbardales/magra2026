@@ -1,0 +1,25 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}{% if object %}Editar Unidad{% else %}Nueva Unidad{% endif %}{% endblock %}
+{% block inv_content %}
+<div class="d-flex align-items-center mb-3">
+  <a href="{% url 'inventario_app:unidad-lista' %}" class="text-muted mr-2"><i class="bi bi-arrow-left"></i></a>
+  <h5 class="font-weight-bold mb-0">{% if object %}Editar Unidad{% else %}Nueva Unidad de Medida{% endif %}</h5>
+</div>
+<div class="card border-0 shadow-sm" style="max-width:440px">
+  <div class="card-body">
+    <form method="post">{% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label class="font-weight-bold">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<small class="text-danger">{{ field.errors.0 }}</small>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="d-flex justify-content-end mt-2">
+        <a href="{% url 'inventario_app:unidad-lista' %}" class="btn btn-outline-secondary mr-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary">{% if object %}Actualizar{% else %}Crear{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

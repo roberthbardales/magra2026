@@ -1,0 +1,67 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Movimientos{% endblock %}
+
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="font-weight-bold mb-0">Historial de Movimientos</h5>
+</div>
+
+<!-- FILTROS -->
+<form method="get" class="bg-white rounded border p-3 mb-3">
+  <div class="row">
+    <div class="col-md-3">{{ filtro_form.producto }}</div>
+    <div class="col-md-2">{{ filtro_form.tipo }}</div>
+    <div class="col-md-2">{{ filtro_form.fecha_inicio }}</div>
+    <div class="col-md-2">{{ filtro_form.fecha_fin }}</div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+      <a href="{% url 'inventario_app:movimiento-lista' %}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="inv-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Fecha</th><th>Producto</th><th>Tipo</th>
+        <th class="text-right">Cantidad</th><th class="text-right">Saldo post.</th>
+        <th>Documento</th><th>Usuario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mov in movimientos %}
+      <tr>
+        <td><small>{{ mov.fecha|date:"d/m/Y H:i" }}</small></td>
+        <td>
+          <a href="{% url 'inventario_app:producto-detalle' mov.producto.pk %}">{{ mov.producto.nombre }}</a>
+        </td>
+        <td>
+          {% if mov.es_entrada %}
+            <span class="badge badge-success">{{ mov.get_tipo_display }}</span>
+          {% else %}
+            <span class="badge badge-danger">{{ mov.get_tipo_display }}</span>
+          {% endif %}
+        </td>
+        <td class="text-right">{{ mov.cantidad }}</td>
+        <td class="text-right">{{ mov.stock_posterior }}</td>
+        <td><small>{{ mov.documento_referencia|default:"—" }}</small></td>
+        <td><small>{{ mov.usuario.full_name }}</small></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">No hay movimientos con los filtros aplicados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-end">
+    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>{% endif %}
+    <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>{% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

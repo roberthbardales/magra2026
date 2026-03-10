@@ -1,0 +1,91 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Alertas{% endblock %}
+
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="font-weight-bold mb-0">Alertas de Inventario</h5>
+</div>
+
+<!-- FILTROS -->
+<form method="get" class="bg-white rounded border p-3 mb-3">
+  <div class="row">
+    <div class="col-md-3">
+      <select name="tipo" class="form-control form-control-sm">
+        <option value="">Todos los tipos</option>
+        {% for val, label in tipos %}
+          <option value="{{ val }}" {% if request.GET.tipo == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="prioridad" class="form-control form-control-sm">
+        <option value="">Todas las prioridades</option>
+        {% for val, label in prioridades %}
+          <option value="{{ val }}" {% if request.GET.prioridad == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="resuelta" class="form-control form-control-sm">
+        <option value="0" {% if request.GET.resuelta != '1' %}selected{% endif %}>Solo activas</option>
+        <option value="1" {% if request.GET.resuelta == '1' %}selected{% endif %}>Solo resueltas</option>
+        <option value="all">Todas</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+      <a href="{% url 'inventario_app:alerta-lista' %}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="inv-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Producto</th><th>Tipo</th><th>Prioridad</th>
+        <th>Mensaje</th><th>Fecha</th><th>Estado</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for alerta in alertas %}
+      <tr>
+        <td>
+          <a href="{% url 'inventario_app:producto-detalle' alerta.producto.pk %}">
+            {{ alerta.producto.nombre }}
+          </a>
+        </td>
+        <td><span class="badge badge-secondary">{{ alerta.get_tipo_display }}</span></td>
+        <td>
+          {% if alerta.prioridad == '3' %}<span class="badge badge-danger">Alta</span>
+          {% elif alerta.prioridad == '2' %}<span class="badge badge-warning">Media</span>
+          {% else %}<span class="badge badge-light border">Baja</span>{% endif %}
+        </td>
+        <td><small>{{ alerta.mensaje }}</small></td>
+        <td><small>{{ alerta.created|date:"d/m/Y H:i" }}</small></td>
+        <td>
+          {% if alerta.resuelta %}
+            <span class="badge badge-success">Resuelta</span>
+          {% else %}
+            <span class="badge badge-danger">Activa</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if not alerta.resuelta %}
+            <form method="post" action="{% url 'inventario_app:alerta-resolver' alerta.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-xs btn-outline-success" title="Marcar como resuelta">
+                <i class="bi bi-check-lg"></i>
+              </button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">No hay alertas con los filtros aplicados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<style>.btn-xs{padding:.15rem .4rem;font-size:.75rem;}</style>
+{% endblock %}

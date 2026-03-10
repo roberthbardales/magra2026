@@ -1,0 +1,33 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Solicitar Ajuste{% endblock %}
+{% block inv_content %}
+<div class="d-flex align-items-center mb-3">
+  <a href="{% url 'inventario_app:ajuste-lista' %}" class="text-muted mr-2"><i class="bi bi-arrow-left"></i></a>
+  <h5 class="font-weight-bold mb-0">Solicitar Ajuste de Inventario</h5>
+</div>
+<div class="card border-0 shadow-sm" style="max-width:600px">
+  <div class="card-body">
+    <p class="text-muted small">El ajuste quedará en estado <strong>Pendiente</strong> hasta que un Administrador lo apruebe.</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="font-weight-bold">Producto *</label>
+        {{ form.producto }}
+      </div>
+      <div class="form-group">
+        <label class="font-weight-bold">Cantidad física contada *</label>
+        {{ form.cantidad_fisica }}
+        <small class="text-muted">Ingresa lo que realmente hay en almacén.</small>
+      </div>
+      <div class="form-group">
+        <label class="font-weight-bold">Motivo *</label>
+        {{ form.motivo }}
+      </div>
+      <div class="d-flex justify-content-end">
+        <a href="{% url 'inventario_app:ajuste-lista' %}" class="btn btn-outline-secondary mr-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Solicitar Ajuste</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

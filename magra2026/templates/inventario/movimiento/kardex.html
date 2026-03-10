@@ -1,0 +1,117 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Kardex — {{ producto.nombre }}{% endblock %}
+
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <a href="{% url 'inventario_app:producto-detalle' producto.pk %}" class="text-muted small">
+      <i class="bi bi-arrow-left"></i> Volver al producto
+    </a>
+    <h5 class="font-weight-bold mb-0 mt-1">
+      Kardex — {{ producto.nombre }} <code class="text-muted">{{ producto.sku }}</code>
+    </h5>
+  </div>
+</div>
+
+<!-- RESUMEN -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-primary text-white"><i class="bi bi-layers-fill"></i></div>
+      <div>
+        <div class="stat-card-value">{{ producto.stock_actual }}</div>
+        <div class="stat-card-label">Stock actual</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-success text-white"><i class="bi bi-arrow-down-circle"></i></div>
+      <div>
+        <div class="stat-card-value">{{ total_entradas }}</div>
+        <div class="stat-card-label">Total entradas</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-danger text-white"><i class="bi bi-arrow-up-circle"></i></div>
+      <div>
+        <div class="stat-card-value">{{ total_salidas }}</div>
+        <div class="stat-card-label">Total salidas</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon bg-info text-white"><i class="bi bi-currency-dollar"></i></div>
+      <div>
+        <div class="stat-card-value">S/ {{ producto.precio_venta }}</div>
+        <div class="stat-card-label">Precio de venta</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLA KARDEX -->
+<div class="inv-table">
+  <table class="table table-sm table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Documento</th>
+        <th class="text-right">Entrada</th>
+        <th class="text-right">Salida</th>
+        <th class="text-right">Saldo</th>
+        <th class="text-right">P. Unit.</th>
+        <th class="text-right">Total</th>
+        <th>Motivo</th>
+        <th>Usuario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mov in movimientos %}
+      <tr>
+        <td><small>{{ mov.fecha|date:"d/m/Y H:i" }}</small></td>
+        <td>
+          {% if mov.es_entrada %}
+            <span class="badge badge-success">{{ mov.get_tipo_display }}</span>
+          {% else %}
+            <span class="badge badge-danger">{{ mov.get_tipo_display }}</span>
+          {% endif %}
+        </td>
+        <td><small>{{ mov.documento_referencia|default:"—" }}</small></td>
+        <td class="text-right text-success">
+          {% if mov.es_entrada %}<strong>{{ mov.cantidad }}</strong>{% else %}—{% endif %}
+        </td>
+        <td class="text-right text-danger">
+          {% if not mov.es_entrada %}<strong>{{ mov.cantidad }}</strong>{% else %}—{% endif %}
+        </td>
+        <td class="text-right font-weight-bold">{{ mov.stock_posterior }}</td>
+        <td class="text-right">S/ {{ mov.precio_unitario }}</td>
+        <td class="text-right">S/ {{ mov.total }}</td>
+        <td><small>{{ mov.motivo|default:"—"|truncatechars:40 }}</small></td>
+        <td><small>{{ mov.usuario.full_name }}</small></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10" class="text-center text-muted py-4">Sin movimientos registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-end">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

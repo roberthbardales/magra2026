@@ -1,0 +1,30 @@
+{% extends "inventario/base_inventario.html" %}
+{% block page_title %}Proveedores{% endblock %}
+{% block inv_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="font-weight-bold mb-0">Proveedores</h5>
+  <a href="{% url 'inventario_app:proveedor-crear' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nuevo</a>
+</div>
+<form method="get" class="mb-3"><div class="input-group" style="max-width:360px"><input type="text" name="q" value="{{ request.GET.q }}" class="form-control form-control-sm" placeholder="Razón social o RUC..."><div class="input-group-append"><button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-search"></i></button></div></div></form>
+<div class="inv-table">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Razón Social</th><th>RUC</th><th>Contacto</th><th>Teléfono</th><th>Email</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      {% for p in proveedores %}
+      <tr>
+        <td><a href="{% url 'inventario_app:proveedor-detalle' p.pk %}">{{ p.razon_social }}</a></td>
+        <td><code>{{ p.ruc }}</code></td>
+        <td>{{ p.contacto|default:"—" }}</td>
+        <td>{{ p.telefono|default:"—" }}</td>
+        <td>{{ p.email|default:"—" }}</td>
+        <td>{% if p.activo %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge badge-secondary">Inactivo</span>{% endif %}</td>
+        <td><a href="{% url 'inventario_app:proveedor-editar' p.pk %}" class="btn btn-xs btn-outline-secondary"><i class="bi bi-pencil"></i></a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-3">Sin proveedores.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<style>.btn-xs{padding:.15rem .4rem;font-size:.75rem;}</style>
+{% endblock %}
