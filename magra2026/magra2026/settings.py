@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).ancestor(2)
 SECRET_KEY = 'django-insecure-b(^v6od&&n2wqyq7wcwtbcytvso=7uv$t(%9a50k%m2lch^11i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['codigobase.duckdns.org']
 
 
 # Application definition
@@ -123,6 +123,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR.child('static')]
+STATIC_ROOT = BASE_DIR.child('staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.child('media')
