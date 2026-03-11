@@ -1,420 +1,240 @@
-{% extends 'base.html' %}
 {% load static %}
-
-{% block title %}Magra 2026 — Sistema de Inventario{% endblock %}
-
-{% block content %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Magra 2026 — Sistema de Inventario</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAGRA — Sistema de Inventario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:        #0a0c0f;
-      --surface:   #111418;
-      --border:    #1e2328;
-      --accent:    #c8f135;
-      --accent2:   #2af598;
-      --text:      #e8eaed;
-      --muted:     #6b7280;
-      --font-head: 'Syne', sans-serif;
-      --font-body: 'DM Sans', sans-serif;
+      --dark:#0d0f14; --dark2:#13161d; --dark3:#1a1e28;
+      --border:#222633; --accent:#4e9fff; --accent2:#2db87a;
+      --accent3:#f0a050; --text:#e8eaf0; --muted:#6b7280;
     }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── NOISE OVERLAY ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── NAVBAR ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 3rem;
-      border-bottom: 1px solid var(--border);
-      background: rgba(10,12,15,0.85);
-      backdrop-filter: blur(12px);
-    }
-
-    .nav-logo {
-      font-family: var(--font-head);
-      font-weight: 800;
-      font-size: 1.1rem;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .nav-logo span {
-      display: inline-block;
-      width: 8px; height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--text); }
-
-    .nav-cta {
-      background: var(--accent);
-      color: #0a0c0f;
-      padding: 0.5rem 1.25rem;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: opacity 0.2s;
-    }
-
-    .nav-cta:hover { opacity: 0.85; }
-
-    /* ── HERO ── */
-    .hero {
-      position: relative;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 8rem 2rem 4rem;
-      z-index: 1;
-    }
-
-    /* grid background */
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent);
-      pointer-events: none;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(200,241,53,0.08);
-      border: 1px solid rgba(200,241,53,0.25);
-      color: var(--accent);
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.35rem 0.85rem;
-      border-radius: 999px;
-      margin-bottom: 2rem;
-      animation: fadeUp 0.6s ease both;
-    }
-
-    .badge::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 2s ease infinite;
-    }
-
-    h1 {
-      font-family: var(--font-head);
-      font-size: clamp(2.8rem, 7vw, 6rem);
-      font-weight: 800;
-      line-height: 1.0;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.5rem;
-      animation: fadeUp 0.6s 0.1s ease both;
-    }
-
-    h1 em {
-      font-style: normal;
-      color: var(--accent);
-    }
-
-    .hero-sub {
-      max-width: 520px;
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.7;
-      margin-bottom: 2.5rem;
-      animation: fadeUp 0.6s 0.2s ease both;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      animation: fadeUp 0.6s 0.3s ease both;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #0a0c0f;
-      padding: 0.85rem 2rem;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      text-decoration: none;
-      transition: transform 0.2s, opacity 0.2s;
-    }
-
-    .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      text-decoration: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--muted);
-      background: var(--surface);
-    }
-
-    /* ── STATS BAR ── */
-    .stats {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      animation: fadeUp 0.6s 0.4s ease both;
-    }
-
-    .stat-item {
-      flex: 1;
-      max-width: 220px;
-      padding: 2rem 2.5rem;
-      border-right: 1px solid var(--border);
-      text-align: center;
-    }
-
-    .stat-item:last-child { border-right: none; }
-
-    .stat-number {
-      font-family: var(--font-head);
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: -0.03em;
-    }
-
-    .stat-label {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 0.25rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    /* ── FEATURES ── */
-    .features {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border-top: 1px solid var(--border);
-    }
-
-    .feature-card {
-      background: var(--surface);
-      padding: 2.5rem;
-      transition: background 0.2s;
-    }
-
-    .feature-card:hover { background: #161a1f; }
-
-    .feature-icon {
-      width: 44px; height: 44px;
-      background: rgba(200,241,53,0.08);
-      border: 1px solid rgba(200,241,53,0.15);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.25rem;
-      font-size: 1.2rem;
-    }
-
-    .feature-card h3 {
-      font-family: var(--font-head);
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.01em;
-    }
-
-    .feature-card p {
-      font-size: 0.875rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 2rem;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.4; }
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 640px) {
-      nav { padding: 1rem 1.5rem; }
-      .nav-links { display: none; }
-      .stats { flex-direction: column; }
-      .stat-item { border-right: none; border-bottom: 1px solid var(--border); max-width: 100%; }
-    }
+    html { scroll-behavior: smooth; }
+    body { font-family:'DM Sans',sans-serif; background:var(--dark); color:var(--text); min-height:100vh; overflow-x:hidden; }
+    .bg-grid { position:fixed; inset:0; z-index:0; background-image:linear-gradient(rgba(78,159,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(78,159,255,.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; }
+    .bg-glow { position:fixed; z-index:0; border-radius:50%; filter:blur(120px); pointer-events:none; }
+    .bg-glow-1 { width:600px; height:600px; background:rgba(78,159,255,.08); top:-200px; right:-100px; animation:float1 8s ease-in-out infinite; }
+    .bg-glow-2 { width:400px; height:400px; background:rgba(45,184,122,.06); bottom:-100px; left:-100px; animation:float2 10s ease-in-out infinite; }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,30px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-20px)} }
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:1.25rem 3rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid transparent; transition:background .3s,border-color .3s; }
+    nav.scrolled { background:rgba(13,15,20,.95); border-color:var(--border); backdrop-filter:blur(12px); }
+    .nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; letter-spacing:-.02em; display:flex; align-items:center; gap:.5rem; }
+    .nav-logo span { color:var(--accent); }
+    .nav-logo-badge { font-size:.6rem; font-weight:700; background:var(--accent); color:#fff; padding:.15rem .4rem; border-radius:4px; letter-spacing:.08em; text-transform:uppercase; }
+    .nav-btn { background:var(--accent); color:#fff; border:none; padding:.6rem 1.5rem; border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:500; font-size:.9rem; text-decoration:none; transition:opacity .2s,transform .2s; display:flex; align-items:center; gap:.4rem; }
+    .nav-btn:hover { opacity:.85; transform:translateY(-1px); color:#fff; }
+    .hero { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8rem 2rem 4rem; }
+    .hero-badge { display:inline-flex; align-items:center; gap:.5rem; background:rgba(78,159,255,.1); border:1px solid rgba(78,159,255,.2); padding:.4rem 1rem; border-radius:100px; font-size:.8rem; color:var(--accent); margin-bottom:2rem; animation:fadeUp .6s ease both; }
+    .hero-title { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(3rem,8vw,6rem); line-height:.95; letter-spacing:-.03em; margin-bottom:1.5rem; animation:fadeUp .6s .1s ease both; }
+    .hero-title .accent { color:var(--accent); }
+    .hero-title .block { display:block; }
+    .hero-sub { font-size:clamp(1rem,2vw,1.2rem); color:var(--muted); max-width:520px; line-height:1.7; margin-bottom:3rem; animation:fadeUp .6s .2s ease both; }
+    .hero-actions { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; animation:fadeUp .6s .3s ease both; }
+    .btn-primary-hero { background:var(--accent); color:#fff; border:none; padding:.9rem 2rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-weight:500; font-size:1rem; text-decoration:none; display:flex; align-items:center; gap:.5rem; transition:transform .2s,box-shadow .2s; box-shadow:0 0 30px rgba(78,159,255,.3); }
+    .btn-primary-hero:hover { transform:translateY(-2px); box-shadow:0 0 50px rgba(78,159,255,.5); color:#fff; }
+    .btn-outline-hero { background:transparent; color:var(--text); border:1px solid var(--border); padding:.9rem 2rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-weight:500; font-size:1rem; text-decoration:none; display:flex; align-items:center; gap:.5rem; transition:border-color .2s,background .2s; }
+    .btn-outline-hero:hover { border-color:var(--accent); background:rgba(78,159,255,.05); color:var(--text); }
+    .stats-row { position:relative; z-index:1; display:flex; justify-content:center; gap:3rem; padding:2rem; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(13,15,20,.5); animation:fadeUp .6s .4s ease both; }
+    .stat-item { text-align:center; }
+    .stat-num { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--accent); }
+    .stat-label { font-size:.8rem; color:var(--muted); margin-top:.2rem; }
+    .section { position:relative; z-index:1; padding:6rem 2rem; max-width:1100px; margin:0 auto; }
+    .section-label { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.15em; color:var(--accent); margin-bottom:1rem; }
+    .section-title { font-family:'Syne',sans-serif; font-size:clamp(2rem,4vw,3rem); font-weight:800; letter-spacing:-.02em; margin-bottom:1rem; line-height:1.1; }
+    .section-sub { color:var(--muted); font-size:1rem; max-width:500px; line-height:1.7; margin-bottom:3rem; }
+    .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+    .feature-card { background:var(--dark2); border:1px solid var(--border); border-radius:14px; padding:1.75rem; transition:border-color .2s,transform .2s; position:relative; overflow:hidden; }
+    .feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--card-accent,var(--accent)),transparent); opacity:0; transition:opacity .3s; }
+    .feature-card:hover { border-color:var(--card-accent,var(--accent)); transform:translateY(-3px); }
+    .feature-card:hover::before { opacity:1; }
+    .feature-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:1rem; }
+    .feature-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:.5rem; }
+    .feature-desc { font-size:.875rem; color:var(--muted); line-height:1.6; }
+    .roles-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; }
+    .role-card { background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:1.5rem; transition:border-color .2s; }
+    .role-card:hover { border-color:var(--card-color,var(--accent)); }
+    .role-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; margin-bottom:1rem; }
+    .role-name { font-family:'Syne',sans-serif; font-weight:700; margin-bottom:.75rem; }
+    .role-perms { list-style:none; }
+    .role-perms li { font-size:.8rem; color:var(--muted); padding:.3rem 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.5rem; }
+    .role-perms li:last-child { border:none; }
+    .cta-section { position:relative; z-index:1; text-align:center; padding:6rem 2rem; border-top:1px solid var(--border); }
+    .cta-box { max-width:600px; margin:0 auto; background:var(--dark2); border:1px solid var(--border); border-radius:20px; padding:3rem 2rem; position:relative; overflow:hidden; }
+    .cta-box::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:200px; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+    .cta-title { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; letter-spacing:-.02em; margin-bottom:1rem; }
+    .cta-sub { color:var(--muted); margin-bottom:2rem; line-height:1.6; }
+    footer { position:relative; z-index:1; border-top:1px solid var(--border); padding:2rem 3rem; display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:.85rem; }
+    .footer-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--text); }
+    .footer-logo span { color:var(--accent); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .6s ease,transform .6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    @media(max-width:768px) { nav{padding:1rem 1.5rem} .stats-row{gap:1.5rem;flex-wrap:wrap} footer{flex-direction:column;gap:1rem;text-align:center} }
   </style>
 </head>
 <body>
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
 
-  <!-- NAVBAR -->
-  <nav>
-    <div class="nav-logo">
-      <span></span>
-      MAGRA <span style="color:var(--muted); font-weight:400; font-size:0.85rem; margin-left:4px">ERP</span>
+<nav id="navbar">
+  <div class="nav-logo">MAGRA<span>.</span><span class="nav-logo-badge">ERP</span></div>
+  <a href="{% url 'users_app:user-login' %}" class="nav-btn">
+    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+  </a>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">
+    <i class="bi bi-circle-fill" style="color:var(--accent2);font-size:.6rem;"></i>
+    Sistema activo y operativo
+  </div>
+  <h1 class="hero-title">
+    <span class="block">Control total</span>
+    <span class="block accent">de inventario</span>
+  </h1>
+  <p class="hero-sub">MAGRA ERP centraliza la gestión de stock, movimientos, alertas y usuarios en una sola plataforma diseñada para tu equipo.</p>
+  <div class="hero-actions">
+    <a href="{% url 'users_app:user-login' %}" class="btn-primary-hero">
+      <i class="bi bi-box-arrow-in-right"></i> Acceder al sistema
+    </a>
+    <a href="#modulos" class="btn-outline-hero">
+      <i class="bi bi-grid-3x3-gap"></i> Ver módulos
+    </a>
+  </div>
+</section>
+
+<div class="stats-row reveal">
+  <div class="stat-item"><div class="stat-num">100+</div><div class="stat-label">Productos registrados</div></div>
+  <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Roles de acceso</div></div>
+  <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">Almacenes activos</div></div>
+  <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">Movimientos trazables</div></div>
+</div>
+
+<section class="section" id="modulos">
+  <p class="section-label reveal">Módulos del sistema</p>
+  <h2 class="section-title reveal">Todo lo que necesitas,<br>en un solo lugar</h2>
+  <p class="section-sub reveal">Gestiona cada aspecto del inventario con herramientas diseñadas para tu operación diaria.</p>
+  <div class="features-grid">
+    <div class="feature-card reveal" style="--card-accent:#4e9fff;">
+      <div class="feature-icon" style="background:rgba(78,159,255,.1);"><i class="bi bi-box-seam-fill" style="color:#4e9fff;"></i></div>
+      <div class="feature-title">Productos & Stock</div>
+      <div class="feature-desc">Registro completo con SKU, categoría, proveedor, stock mínimo y máximo con alertas automáticas.</div>
     </div>
-    <ul class="nav-links">
-      <li><a href="#">Inventario</a></li>
-      <li><a href="#">Reportes</a></li>
-      <li><a href="#">Usuarios</a></li>
-    </ul>
-    <a href="{% url 'users_app:user-login' %}" class="nav-cta">Iniciar sesión →</a>
-  </nav>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="badge">Demo · Módulo Inventario</div>
-
-    <h1>Control total<br/>de tu <em>inventario</em></h1>
-
-    <p class="hero-sub">
-      Sistema ERP diseñado para gestionar stock, movimientos y usuarios
-      con roles y permisos definidos para cada área.
-    </p>
-
-    <div class="hero-actions">
-      <a href="{% url 'users_app:user-login' %}" class="btn-primary">Entrar al sistema</a>
-      <a href="{% url 'users_app:user-register' %}" class="btn-secondary">Crear cuenta</a>
+    <div class="feature-card reveal" style="--card-accent:#2db87a;">
+      <div class="feature-icon" style="background:rgba(45,184,122,.1);"><i class="bi bi-arrow-left-right" style="color:#2db87a;"></i></div>
+      <div class="feature-title">Movimientos & Kardex</div>
+      <div class="feature-desc">Trazabilidad completa de entradas, salidas, devoluciones y ajustes con historial por producto.</div>
     </div>
-  </section>
-
-  <!-- STATS -->
-  <div class="stats">
-    <div class="stat-item">
-      <div class="stat-number">4</div>
-      <div class="stat-label">Roles de usuario</div>
+    <div class="feature-card reveal" style="--card-accent:#f0a050;">
+      <div class="feature-icon" style="background:rgba(240,160,80,.1);"><i class="bi bi-bell-fill" style="color:#f0a050;"></i></div>
+      <div class="feature-title">Alertas Inteligentes</div>
+      <div class="feature-desc">Notificaciones por stock mínimo, máximo, vencimiento y productos sin movimiento.</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-number">1</div>
-      <div class="stat-label">Módulo activo</div>
+    <div class="feature-card reveal" style="--card-accent:#b482ff;">
+      <div class="feature-icon" style="background:rgba(180,130,255,.1);"><i class="bi bi-clipboard2-check-fill" style="color:#b482ff;"></i></div>
+      <div class="feature-title">Ajustes de Inventario</div>
+      <div class="feature-desc">Flujo de aprobación con estados Pendiente, Aprobado y Rechazado con trazabilidad de responsables.</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-number">∞</div>
-      <div class="stat-label">Productos</div>
+    <div class="feature-card reveal" style="--card-accent:#4e9fff;">
+      <div class="feature-icon" style="background:rgba(78,159,255,.1);"><i class="bi bi-building-fill" style="color:#4e9fff;"></i></div>
+      <div class="feature-title">Almacenes & Proveedores</div>
+      <div class="feature-desc">Gestión de múltiples almacenes y proveedores con información completa y productos asociados.</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-number">2026</div>
-      <div class="stat-label">Versión demo</div>
+    <div class="feature-card reveal" style="--card-accent:#2db87a;">
+      <div class="feature-icon" style="background:rgba(45,184,122,.1);"><i class="bi bi-people-fill" style="color:#2db87a;"></i></div>
+      <div class="feature-title">Gestión de Usuarios</div>
+      <div class="feature-desc">Control de acceso por roles con permisos granulares para cada sección del sistema.</div>
     </div>
   </div>
+</section>
 
-  <!-- FEATURES -->
-  <section class="features">
-    <div class="feature-card">
-      <div class="feature-icon">📦</div>
-      <h3>Gestión de Stock</h3>
-      <p>Registra entradas y salidas de productos con trazabilidad completa.</p>
+<section class="section" id="roles" style="padding-top:0;">
+  <p class="section-label reveal">Control de acceso</p>
+  <h2 class="section-title reveal">Roles diseñados<br>para tu equipo</h2>
+  <p class="section-sub reveal">Cada usuario accede solo a lo que le corresponde según su rol en la organización.</p>
+  <div class="roles-grid">
+    <div class="role-card reveal" style="--card-color:#e05c5c;">
+      <div class="role-icon" style="background:rgba(224,92,92,.1);"><i class="bi bi-shield-fill-check" style="color:#e05c5c;"></i></div>
+      <div class="role-name">Superusuario</div>
+      <ul class="role-perms">
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Acceso total al sistema</li>
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Registrar nuevos usuarios</li>
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Modificar y eliminar</li>
+      </ul>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">👥</div>
-      <h3>Roles y Permisos</h3>
-      <p>Administrador, Ventas, Almacén y Gerencia con accesos diferenciados.</p>
+    <div class="role-card reveal" style="--card-color:#4e9fff;">
+      <div class="role-icon" style="background:rgba(78,159,255,.1);"><i class="bi bi-person-badge-fill" style="color:#4e9fff;"></i></div>
+      <div class="role-name">Administrador</div>
+      <ul class="role-perms">
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Acceso total al sistema</li>
+        <li><i class="bi bi-x-circle-fill" style="color:#e05c5c;"></i>No registra usuarios</li>
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Modificar y eliminar</li>
+      </ul>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">📊</div>
-      <h3>Reportes</h3>
-      <p>Visualiza el estado del inventario en tiempo real desde cualquier área.</p>
+    <div class="role-card reveal" style="--card-color:#2db87a;">
+      <div class="role-icon" style="background:rgba(45,184,122,.1);"><i class="bi bi-cart-fill" style="color:#2db87a;"></i></div>
+      <div class="role-name">Ventas</div>
+      <ul class="role-perms">
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Productos y stock</li>
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Almacenes y proveedores</li>
+        <li><i class="bi bi-x-circle-fill" style="color:#e05c5c;"></i>Sin acceso a movimientos</li>
+      </ul>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔐</div>
-      <h3>Acceso Seguro</h3>
-      <p>Autenticación por email con control de sesiones y cambio de contraseña.</p>
+    <div class="role-card reveal" style="--card-color:#f0a050;">
+      <div class="role-icon" style="background:rgba(240,160,80,.1);"><i class="bi bi-building" style="color:#f0a050;"></i></div>
+      <div class="role-name">Almacén</div>
+      <ul class="role-perms">
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Stock, alertas y productos</li>
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Movimientos y ajustes</li>
+        <li><i class="bi bi-x-circle-fill" style="color:#e05c5c;"></i>Sin acceso a proveedores</li>
+      </ul>
     </div>
-  </section>
+    <div class="role-card reveal" style="--card-color:#b482ff;">
+      <div class="role-icon" style="background:rgba(180,130,255,.1);"><i class="bi bi-graph-up" style="color:#b482ff;"></i></div>
+      <div class="role-name">Gerencia</div>
+      <ul class="role-perms">
+        <li><i class="bi bi-check-circle-fill" style="color:#2db87a;"></i>Acceso a todo el sistema</li>
+        <li><i class="bi bi-x-circle-fill" style="color:#e05c5c;"></i>Solo lectura</li>
+        <li><i class="bi bi-x-circle-fill" style="color:#e05c5c;"></i>Sin modificar ni eliminar</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
-  <!-- FOOTER -->
-  <footer>
-    Magra ERP &copy; 2026 &mdash; Sistema de Inventario · Demo
-  </footer>
+<section class="cta-section">
+  <div class="cta-box reveal">
+    <h2 class="cta-title">¿Listo para empezar?</h2>
+    <p class="cta-sub">Ingresa con tus credenciales y toma el control de tu inventario desde cualquier dispositivo.</p>
+    <a href="{% url 'users_app:user-login' %}" class="btn-primary-hero" style="display:inline-flex;">
+      <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+    </a>
+  </div>
+</section>
 
+<footer>
+  <div class="footer-logo">MAGRA<span>.</span></div>
+  <div>Sistema ERP de Inventario &copy; 2026</div>
+  <div style="display:flex;align-items:center;gap:.5rem;">
+    <i class="bi bi-shield-check" style="color:var(--accent2);"></i>
+    <span>Acceso seguro por roles</span>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('scroll',()=>{
+    document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>20);
+  });
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach((e,i)=>{ if(e.isIntersecting) setTimeout(()=>e.target.classList.add('visible'),i*80); });
+  },{threshold:0.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
 </body>
 </html>
-{% endblock %}
