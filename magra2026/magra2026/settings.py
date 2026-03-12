@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).ancestor(2)
 SECRET_KEY = 'django-insecure-b(^v6od&&n2wqyq7wcwtbcytvso=7uv$t(%9a50k%m2lch^11i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['codigobase.duckdns.org', '127.0.0.1', 'localhost']
 

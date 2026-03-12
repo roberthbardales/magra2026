@@ -59,3 +59,7 @@ urlpatterns = [
     path('inventario/alertas/', views.AlertaListView.as_view(), name='alerta-lista'),
     path('inventario/alertas/<int:pk>/resolver/', views.AlertaResolverView.as_view(), name='alerta-resolver'),
 ]
+
+
+from .urls_reportes import reporte_urlpatterns
+urlpatterns += reporte_urlpatterns

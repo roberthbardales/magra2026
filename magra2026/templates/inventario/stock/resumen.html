@@ -2,6 +2,16 @@
 {% block page_title %}Resumen de Stock{% endblock %}
 {% block inv_content %}
 <h5 class="font-weight-bold mb-4">Resumen de Stock</h5>
+<div class="d-flex gap-2">
+  <a href="{% url 'inventario_app:reporte-stock-pdf' %}"
+     class="btn btn-sm btn-danger">
+    <i class="bi bi-file-pdf-fill me-1"></i>PDF
+  </a>
+  <a href="{% url 'inventario_app:reporte-stock-excel' %}"
+     class="btn btn-sm btn-success">
+    <i class="bi bi-file-excel-fill me-1"></i>Excel
+  </a>
+</div>
 
 <div class="row mb-4">
   <div class="col-md-4">

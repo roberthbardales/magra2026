@@ -62,14 +62,17 @@ class StockResumenView(StockMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['bajo_minimo']  = Producto.objects.con_stock_minimo()
-        ctx['sobre_maximo'] = Producto.objects.con_stock_maximo()
-        ctx['por_vencer']   = Producto.objects.por_vencer(dias=30)
-        ctx['valor_total']  = Producto.objects.activos().aggregate(
-            total=Sum('stock_actual')
-        )['total'] or 0
+        ctx['bajo_minimo']            = Producto.objects.con_stock_minimo()
+        ctx['sobre_maximo']           = Producto.objects.con_stock_maximo()
+        ctx['por_vencer']             = Producto.objects.por_vencer(dias=30)
+        ctx['valor_total']            = Producto.objects.activos().aggregate(
+            total=Sum('stock_actual'))['total'] or 0
+        ctx['total_skus']             = Producto.objects.activos().count()
+        ctx['valor_total_inventario'] = ctx['valor_total']
+        ctx['productos_bajo_minimo']  = ctx['bajo_minimo']
+        ctx['productos_sobre_maximo'] = ctx['sobre_maximo']
+        ctx['productos_por_vencer']   = ctx['por_vencer']
         return ctx
-
 
 # ══════════════════════════════════════════
 #  PRODUCTO

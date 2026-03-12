@@ -14,8 +14,22 @@
       --border:#222633; --accent:#4e9fff; --accent2:#2db87a;
       --accent3:#f0a050; --text:#e8eaf0; --muted:#6b7280;
     }
+    html.light {
+      --dark:#ffffff; --dark2:#f4f6f9; --dark3:#e8ebf0;
+      --border:#dde1ea; --text:#1a1d23; --muted:#6b7280;
+    }
+    html.light body { background:#f4f6f9; }
+    html.light .bg-grid { background-image:linear-gradient(rgba(78,159,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(78,159,255,.06) 1px,transparent 1px); }
+    html.light .bg-glow-1 { background:rgba(78,159,255,.12); }
+    html.light .bg-glow-2 { background:rgba(45,184,122,.08); }
+    html.light nav.scrolled { background:rgba(244,246,249,.95); }
+    html.light .stats-row { background:rgba(244,246,249,.8); }
     html { scroll-behavior: smooth; }
-    body { font-family:'DM Sans',sans-serif; background:var(--dark); color:var(--text); min-height:100vh; overflow-x:hidden; }
+    body { font-family:'DM Sans',sans-serif; background:var(--dark); color:var(--text); min-height:100vh; overflow-x:hidden; transition:background .3s,color .3s; }
+    .theme-toggle { width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,.08); border:1px solid var(--border); color:var(--text); font-size:1rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .2s,border-color .2s; flex-shrink:0; }
+    .theme-toggle:hover { background:rgba(255,255,255,.15); border-color:var(--accent); }
+    html.light .theme-toggle { background:rgba(0,0,0,.05); }
+    html.light .theme-toggle:hover { background:rgba(0,0,0,.1); }
     .bg-grid { position:fixed; inset:0; z-index:0; background-image:linear-gradient(rgba(78,159,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(78,159,255,.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; }
     .bg-glow { position:fixed; z-index:0; border-radius:50%; filter:blur(120px); pointer-events:none; }
     .bg-glow-1 { width:600px; height:600px; background:rgba(78,159,255,.08); top:-200px; right:-100px; animation:float1 8s ease-in-out infinite; }
@@ -85,9 +99,14 @@
 
 <nav id="navbar">
   <div class="nav-logo">MAGRA<span>.</span><span class="nav-logo-badge">ERP</span></div>
-  <a href="{% url 'users_app:user-login' %}" class="nav-btn">
-    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
-  </a>
+  <div style="display:flex;align-items:center;gap:.75rem;">
+    <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+      <i class="bi bi-moon-fill" id="themeIcon"></i>
+    </button>
+    <a href="{% url 'users_app:user-login' %}" class="nav-btn">
+      <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+    </a>
+  </div>
 </nav>
 
 <section class="hero">
@@ -228,13 +247,28 @@
 </footer>
 
 <script>
+  // Navbar scroll
   window.addEventListener('scroll',()=>{
     document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>20);
   });
+
+  // Reveal on scroll
   const obs = new IntersectionObserver((entries)=>{
     entries.forEach((e,i)=>{ if(e.isIntersecting) setTimeout(()=>e.target.classList.add('visible'),i*80); });
   },{threshold:0.1});
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  // Theme toggle
+  const html = document.documentElement;
+  const icon = document.getElementById('themeIcon');
+  const saved = localStorage.getItem('magra-theme') || 'dark';
+  if(saved === 'light') { html.classList.add('light'); icon.className='bi bi-sun-fill'; }
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const isLight = html.classList.toggle('light');
+    icon.className = isLight ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    localStorage.setItem('magra-theme', isLight ? 'light' : 'dark');
+  });
 </script>
 </body>
 </html>
