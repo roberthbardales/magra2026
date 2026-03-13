@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views import View
+from django.db.models import Q
 
 from .models import Producto, Movimiento, AjusteInventario, Alerta, Proveedor
 from .reports import (
@@ -44,18 +45,29 @@ def _excel_response(buffer, nombre):
 # ══════════════════════════════════════════
 class StockPDFView(StockMixin, View):
     def get(self, request):
-        productos = Producto.objects.activos().select_related(
+        qs = Producto.objects.activos().select_related(
             'categoria', 'almacen', 'unidad_medida').order_by('categoria__nombre', 'nombre')
-        buffer = reporte_stock_pdf(productos)
+        q = request.GET.get('q')
+        if q:
+            qs = qs.filter(Q(nombre__icontains=q) | Q(sku__icontains=q))
+        categoria = request.GET.get('categoria')
+        if categoria:
+            qs = qs.filter(categoria_id=categoria)
+        buffer = reporte_stock_pdf(qs)
         return _pdf_response(buffer, 'stock_actual')
 
 class StockExcelView(StockMixin, View):
     def get(self, request):
-        productos = Producto.objects.activos().select_related(
+        qs = Producto.objects.activos().select_related(
             'categoria', 'almacen', 'unidad_medida').order_by('categoria__nombre', 'nombre')
-        buffer = reporte_stock_excel(productos)
+        q = request.GET.get('q')
+        if q:
+            qs = qs.filter(Q(nombre__icontains=q) | Q(sku__icontains=q))
+        categoria = request.GET.get('categoria')
+        if categoria:
+            qs = qs.filter(categoria_id=categoria)
+        buffer = reporte_stock_excel(qs)
         return _excel_response(buffer, 'stock_actual')
-
 
 # ══════════════════════════════════════════
 #  2. KARDEX POR PRODUCTO

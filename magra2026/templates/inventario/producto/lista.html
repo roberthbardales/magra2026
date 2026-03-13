@@ -4,9 +4,20 @@
 {% block inv_content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h5 class="font-weight-bold mb-0">Productos</h5>
-  <a href="{% url 'inventario_app:producto-crear' %}" class="btn btn-primary btn-sm">
-    <i class="bi bi-plus-lg"></i> Nuevo Producto
-  </a>
+  <div class="d-flex align-items-center gap-2">
+    <a href="{% url 'inventario_app:reporte-stock-pdf' %}?q={{ request.GET.q }}&categoria={{ request.GET.categoria }}&estado={{ request.GET.estado }}"
+       class="btn btn-sm btn-danger">
+      <i class="bi bi-file-pdf-fill me-1"></i>PDF
+    </a>
+    <a href="{% url 'inventario_app:reporte-stock-excel' %}?q={{ request.GET.q }}&categoria={{ request.GET.categoria }}&estado={{ request.GET.estado }}"
+       class="btn btn-sm btn-success">
+      <i class="bi bi-file-excel-fill me-1"></i>Excel
+    </a>
+    <div style="width:1px;height:24px;background:#dde1ea;margin:0 .25rem;"></div>
+    <a href="{% url 'inventario_app:producto-crear' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg"></i> Nuevo Producto
+    </a>
+  </div>
 </div>
 
 <!-- FILTROS -->
