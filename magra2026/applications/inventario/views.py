@@ -154,7 +154,7 @@ class EntradaStockView(MovimientoMixin, View):
                     cantidad=form.cleaned_data['cantidad'],
                     precio_unitario=form.cleaned_data.get('precio_unitario'),
                     motivo=form.cleaned_data.get('motivo', ''),
-                    documento_referencia=form.cleaned_data.get('documento_referencia', ''),
+                documento=form.cleaned_data.get('documento_referencia', ''),
                     usuario=request.user,
                 )
                 messages.success(request, 'Entrada registrada correctamente.')

@@ -37,57 +37,117 @@
         </a>
       </li>
 
+      {# ── OPERACIONES ── #}
+      {% if request.user.is_superuser or request.user.occupation in '0123' %}
       <li class="inv-nav-section">Operaciones</li>
+      {% endif %}
 
+      {# Productos: todos los roles #}
+      {% if request.user.is_superuser or request.user.occupation in '0123' %}
       <li>
         <a href="{% url 'inventario_app:producto-lista' %}"
            class="inv-nav-link {% if 'producto' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-box-fill"></i> Productos
         </a>
       </li>
+      {% endif %}
+
+      {# Movimientos: Admin(0), Almacén(2), Gerencia(3) — NO Ventas(1) #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '2' or request.user.occupation == '3' %}
       <li>
         <a href="{% url 'inventario_app:movimiento-lista' %}"
            class="inv-nav-link {% if 'movimiento' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-arrow-left-right"></i> Movimientos
         </a>
       </li>
+      {% endif %}
+
+      {# Ajustes: Admin(0), Almacén(2), Gerencia(3) — NO Ventas(1) #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '2' or request.user.occupation == '3' %}
       <li>
         <a href="{% url 'inventario_app:ajuste-lista' %}"
            class="inv-nav-link {% if 'ajuste' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-sliders"></i> Ajustes
         </a>
       </li>
+      {% endif %}
 
+      {# ── CONFIGURACIÓN ── #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '1' or request.user.occupation == '3' %}
       <li class="inv-nav-section">Configuración</li>
+      {% endif %}
 
+      {# Almacenes: Admin(0), Ventas(1), Gerencia(3) — NO Almacén(2) #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '1' or request.user.occupation == '3' %}
       <li>
         <a href="{% url 'inventario_app:almacen-lista' %}"
            class="inv-nav-link {% if 'almacen' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-building"></i> Almacenes
         </a>
       </li>
+      {% endif %}
+
+      {# Proveedores: Admin(0), Ventas(1), Gerencia(3) — NO Almacén(2) #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '1' or request.user.occupation == '3' %}
       <li>
         <a href="{% url 'inventario_app:proveedor-lista' %}"
            class="inv-nav-link {% if 'proveedor' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-truck"></i> Proveedores
         </a>
       </li>
+      {% endif %}
+
+      {# Categorías: Admin(0), Ventas(1), Gerencia(3) — NO Almacén(2) #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '1' or request.user.occupation == '3' %}
       <li>
         <a href="{% url 'inventario_app:categoria-lista' %}"
            class="inv-nav-link {% if 'categoria' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-tags-fill"></i> Categorías
         </a>
       </li>
+      {% endif %}
+
+      {# Unidades: Admin(0), Ventas(1), Gerencia(3) — NO Almacén(2) #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '1' or request.user.occupation == '3' %}
       <li>
         <a href="{% url 'inventario_app:unidad-lista' %}"
            class="inv-nav-link {% if 'unidad' in request.resolver_match.url_name %}active{% endif %}">
           <i class="bi bi-rulers"></i> Unidades
         </a>
       </li>
+      {% endif %}
+
+      {# ── SISTEMA — Solo Admin(0), Gerencia(3) y Superusuario ── #}
+      {% if request.user.is_superuser or request.user.occupation == '0' or request.user.occupation == '3' %}
+      <li class="inv-nav-section">Sistema</li>
+      <li>
+        <a href="{% url 'users_app:user-lista' %}"
+           class="inv-nav-link {% if request.resolver_match.url_name == 'user-lista' %}active{% endif %}">
+          <i class="bi bi-people-fill"></i> Usuarios
+        </a>
+      </li>
+      {% endif %}
 
     </ul>
 
     <div class="inv-sidebar-footer">
+      <div style="padding:.5rem .75rem;margin-bottom:.5rem;background:#22262e;border-radius:8px;
+                  display:flex;align-items:center;gap:.6rem;">
+        <div style="width:30px;height:30px;border-radius:50%;background:#4e9fff;
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">
+          {{ request.user.full_name|slice:":1"|upper }}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-size:.78rem;font-weight:600;color:#e8eaf0;
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ request.user.full_name|truncatechars:18 }}
+          </div>
+          <div style="font-size:.68rem;color:#555c6b;">
+            {{ request.user.get_occupation_display }}
+          </div>
+        </div>
+      </div>
       <a href="{% url 'users_app:user-logout' %}" class="inv-nav-link text-danger">
         <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
       </a>
